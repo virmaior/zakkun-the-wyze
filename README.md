@@ -22,10 +22,11 @@ The features that I'm looking for are:
 
 As of 2021-05-14, I've got the following:
 * Automatically connect to Wyze (using https://github.com/HclX/WyzeHacks/  and nc I can turn on the webserver)
-* Automatically download from SD card to a computer (implemented in za-toru.sh)
+* Automatically download from SD card to a computer (implemented in https://github.com/virmaior/zakkun-the-wyze/blob/main/za-toru.sh)
 * Identify video parts with activity (I've not gotten the automation down here. See below)
-* Aggreggate continguous 1 minute clips that have activity (implemented in za-horu.sh)
+* Aggreggate continguous 1 minute clips that have activity (implemented in https://github.com/virmaior/zakkun-the-wyze/blob/main/za-horu.sh)
 
+(とる means "to take" in Japanese and can refer both to (a) taking a picture　撮る, (b) taking an object　取る, and (c) taking food 採る ;ほる means "to bury" 掘る. This very good activities for a flying squirrel)
 
 #Video Identification
 

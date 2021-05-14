@@ -18,8 +18,7 @@ printf "started boa on WYZE"
 
 function twodigit
 {
- # echo "what $1 "
-  if [[ "$1" < 10]]
+  if [[ "$1" -lt "10" ]]
   then
     echo 0$1
   else

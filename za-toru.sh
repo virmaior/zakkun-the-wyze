@@ -29,7 +29,6 @@ function twodigit
 
 
 start_wyze_boa
-exit 1
 
 for ((hour =00; hour <= 23; hour++)) 
 do

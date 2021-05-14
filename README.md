@@ -26,9 +26,9 @@ As of 2021-05-14, I've got the following:
 * Identify video parts with activity (I've not gotten the automation down here. See below)
 * Aggreggate continguous 1 minute clips that have activity (implemented in https://github.com/virmaior/zakkun-the-wyze/blob/main/za-horu.sh)
 
-(とる means "to take" in Japanese and can refer both to (a) taking a picture　撮る, (b) taking an object　取る, and (c) taking food 採る ;ほる means "to bury" 掘る. This very good activities for a flying squirrel)
+(とる means "to take" in Japanese and can refer both to (a) taking a picture　撮る, (b) taking an object　取る, and (c) taking food 採る ;ほる means "to bury" 掘る. These are all very good activities for a flying squirrel)
 
-#Video Identification
+#Video Identification (za-miru.sh)
 
 Different attempts:
 1. watch the video in accelerated form --> *Still takes quite a bit of time*

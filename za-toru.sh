@@ -2,7 +2,7 @@
 typeset -i COUNTER=0
 wyzeip=192.168.3.17
 cwd=$(pwd)
-day=20210510
+day=20210512
 uname=root
 pword=WYom2020
 echo $day "\n"
@@ -16,30 +16,23 @@ printf "$uname\r\n $pword\r\n cp /usr/boa/boa.conf /tmp/boa.conf \r\n /usr/boa/b
 printf "started boa on WYZE"
 }
 
-function twodigit
-{
-  if [[ "$1" -lt "10" ]]
-  then
-    echo 0$1
-  else
-    echo $1 
-  fi
-}
 
 
+#start_wyze_boa
 
-start_wyze_boa
+typeset -Z 2 -i hourp=0
+typeset -Z 2 -i minp
 
 for ((hour =00; hour <= 23; hour++)) 
 do
 
-	hourp=$(twodigit $hour)
+	hourp=$hour
 	echo $hourp
 	mkdir $hourp
 	cd $hourp
 	for ((i = 00; i <= 59; i++)) 
 	do
-		minp=$(twodigit $i)
+		minp=$i
 		url=$day/$hourp/$minp.mp4
 		fullurl=$wyzeip/SDPath/record/$url
 		echo $fullurl

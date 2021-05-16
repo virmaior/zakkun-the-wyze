@@ -3,6 +3,30 @@ BODY {
  margin-left:0;
  margin-right:0;
 }
+FORM {
+ margin:0;
+}
+.cropper_FORM {
+	position:fixed;
+	top:0;
+	right:0;
+	z-index:20;
+	height:30px;
+	background-color:#ccc;
+	border-radius:3px;
+	border:2px solid black;
+	overflow:hidden;
+}
+.cropper_FORM:hover  {
+height:auto;
+}
+.cropper TD {
+	text-align:right;
+}
+.dim_input {
+ width:50px;
+}
+
 #select_bar {
  position:fixed;
  bottom:0;
@@ -15,40 +39,66 @@ BODY {
  z-index:20;
 }
 .sb_DIV {
- font-size:12px;
-　border-top:2px solid #ccc;
-  border-left:2px solid #ccc;
-  border-right:2px solid #ccc;
-  border-radius-5px;
-  margin:2px;
-  flex:1 0 0;
-  font-family:monospace;
-
+	font-size:12px;
+	border-top:2px solid #ccc;
+ 	border-left:2px solid #ccc;
+	border-right:2px solid #ccc;
+ 	border-radius-5px;
+ 	margin:2px;
+ 	flex:1 0 0;
+ 	font-family:monospace;
 }
 
 .zminute_DIV { 
 	display:flex; 
 	margin-right:2%;
 	border-top: 1px dotted #ccc;
- } 
-.zmarker {
+	position:relative;
+	width:calc(100% - 10px); 
+	padding:3px;
+} 
+.zm_marker {
 	font-size:20px;
+	font-weight:bold;
+	width:30px;
+
 }
 .za_DIV { 
 	text-align: right;
     	font-weight: bold;
 	padding:10px;  
- z-index:5;
-
+ 	z-index:5;
+	position:relative;
+	flex:1 0 0;
+	min-height:280px;
+	overflow:hidden;
+	margin-right:2px;
 } 
 .za_img { 
-	width:100%; 
+	width:100%;
 	z-index:2;
+	position:absolute;
+	left:0;
+	top:0;
 }
+
+.za_DIV:after {
+	content:attr(screen);
+	position:absolute;
+	top:0;
+	right:0;
+	color:green;
+	background-color:rgba(100,255,255,1);
+	border:2px solid black;
+	border-radius:2px;
+	z-index:15;
+}
+
 .za_DIV:hover {
  overflow:visible;
  z-index:10;
 }
+
 .za_DIV:hover .za_img {
 	right: 10px;
  	top: 10px;
@@ -68,7 +118,7 @@ BODY {
 	background-color:#7af;
 	border-left:0 !important;
 }
-.za_e
+
 .generator {
  border:2px solid pink;
  color:white;

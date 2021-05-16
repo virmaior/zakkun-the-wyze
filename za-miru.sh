@@ -17,7 +17,7 @@ do
 	for i in screen*.jpg
 	do
 		minute=${i:6:2}
-		screen=${i:9:3}
+		screen=${i:9:1}
 		if [[ "${minute}" != "${cminute}" ]] 
 		then
 			echo '</div>' >> $target
@@ -28,7 +28,7 @@ do
 		fi
 
 		#echo  "$COUNTER - $i - " $minute $screen
-		echo '<div class="za_DIV"><IMG minute='$minute' screen='$screen' class="za_img" src="'$hour'/'$i'" />'$screen'</div>' >> $target
+		echo '<div class="za_DIV" screen="'$screen'"><IMG minute='$minute' screen='$screen' class="za_img" src="'$hour'/'$i'" /></div>' >> $target
 	done
 	cd "$cwd"
 	echo '</div>' >> $target

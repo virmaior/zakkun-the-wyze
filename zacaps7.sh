@@ -17,7 +17,7 @@ for i in *.mp4
   do 
   	name=`echo "$i" | cut -d'.' -f1`
   	echo "$name"
-	typeset -i smallcounter=0
+	typeset -Z 3 -i smallcounter=0
 	for ((seconds =00; seconds <= 59; seconds= seconds + capjump))
 	do
 		let smallcounter++

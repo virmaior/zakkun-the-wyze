@@ -2,11 +2,27 @@
 typeset -i COUNTER=0
 wyzeip=192.168.3.17
 cwd=$(pwd)
-day=20210512
 uname=root
 pword=WYom2020
-echo $day "\n"
 
+
+if [ -n "$1" ]
+ then
+	day=$1
+else
+	echo "no parameter given - assuming yesterday"
+	day=$(date -v-1d +%Y%m%d ) 
+fi
+
+if [ -d "$day" ]; then
+   echo "Directory exists $day -- aborting run"
+   exit;
+else
+   echo "Directory doesn't exists"
+fi
+
+mkdir "$day"
+cd "$day" 
 
 function start_wyze_boa
 {

@@ -1,0 +1,88 @@
+BODY {
+ margin-bottom:20px;
+ margin-left:0;
+ margin-right:0;
+}
+#select_bar {
+ position:fixed;
+ bottom:0;
+ height:20px;
+ border-top:2px solid blue;
+ background-color:#ddd;
+ display:flex;
+ bottom:0;
+ width:99%;
+ z-index:20;
+}
+.sb_DIV {
+ font-size:12px;
+　border-top:2px solid #ccc;
+  border-left:2px solid #ccc;
+  border-right:2px solid #ccc;
+  border-radius-5px;
+  margin:2px;
+  flex:1 0 0;
+  font-family:monospace;
+
+}
+
+.zminute_DIV { 
+	display:flex; 
+	margin-right:2%;
+	border-top: 1px dotted #ccc;
+ } 
+.zmarker {
+	font-size:20px;
+}
+.za_DIV { 
+	text-align: right;
+    	font-weight: bold;
+	padding:10px;  
+ z-index:5;
+
+} 
+.za_img { 
+	width:100%; 
+	z-index:2;
+}
+.za_DIV:hover {
+ overflow:visible;
+ z-index:10;
+}
+.za_DIV:hover .za_img {
+	right: 10px;
+ 	top: 10px;
+	border: 2px solid black;
+	border-radius: 3px;
+	/*position: fixed;*/
+	width: 50vw;
+}
+.za_single {
+ 	background-color:#7fa;
+}
+.za_start {
+ 	background-color:#f7a;
+	border-right:0 !important;
+}
+.za_end {
+	background-color:#7af;
+	border-left:0 !important;
+}
+.za_e
+.generator {
+ border:2px solid pink;
+ color:white;
+ background-color:crimson; 
+ font-size:20px;
+ text-align:center;
+ border-radius:3px;
+
+}
+#ranges {
+ min-height:300px;
+ font-family: MonoSpace;
+ border:2px solid black;
+ border-radius:3px;
+ width:100%; 
+ background-color:#ccc;
+}

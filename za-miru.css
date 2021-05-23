@@ -3,6 +3,13 @@ BODY {
  margin-left:0;
  margin-right:0;
 }
+:root {
+ --ss_top:0;
+ --ss_left:0;
+ --ss_right:0;
+ --ss_bottom:0;
+  
+}
 FORM {
  margin:0;
 }
@@ -24,7 +31,7 @@ height:auto;
 	text-align:right;
 }
 .dim_input {
- width:50px;
+ width:60px;
 }
 
 #select_bar {
@@ -75,11 +82,12 @@ height:auto;
 	margin-right:2px;
 } 
 .za_img { 
-	width:100%;
 	z-index:2;
 	position:absolute;
-	left:0;
-	top:0;
+	left: calc( var(--ss_left)     * 1% );
+	top:  calc( var(--ss_top)      * 1% );
+	width:  calc( 100% - ( var(--ss_left) * 1%  ) + ( var(--ss_right) * 1% ) );
+	height: calc( 100% - ( var(-ss_top) * 1%  )  + ( var(--ss_bottom) * 1% ) );
 }
 
 .za_DIV:after {

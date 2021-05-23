@@ -6,6 +6,37 @@ function make_range(ranges,start,finish)
    console.log("added range " + start + " to " + finish);
 }
 
+
+function show_ranges()
+{
+	var zaday = localStorage.getItem("zaday");
+	if (zaday) {
+		console.log(zaday);
+
+		var all_ranges =  JSON.parse(zaday);
+		console.log(all_ranges);
+		var my_string = "";
+		
+for(var hour in all_ranges)
+{
+	my_string +=  hour + '=' +   all_ranges[hour].join(";") + "\n";
+}
+
+		$('#ranges').html('<PRE>' + my_string +  '</PRE>');
+	}
+}
+
+function update_ranges(hour,clean_ranges)
+{
+	var zaday = localStorage.getItem("zaday");
+	if (zaday) {
+	var all_ranges =  JSON.parse(zaday);
+	} else { all_ranges = {} }
+	all_ranges[hour] = clean_ranges;
+	localStorage.setItem('zaday',JSON.stringify(all_ranges));
+
+}
+
 function generate_ranges()
 {
 	console.log("started range generator");
@@ -37,6 +68,7 @@ function generate_ranges()
 		make_range(ranges,first_minute,59);
 	 }
 	
+	var hour = $(".za_top_DIV").attr('hour');
 	var clean_ranges = [];
 	var last_start = false;
 	var last_end = false;
@@ -50,16 +82,18 @@ function generate_ranges()
 		   if (current_start == (last_end + 1)) {
 			last_end = current_end;
 		   } else {
-			clean_ranges.push(last_start + " to " + last_end);
+			clean_ranges.push(hour + ':' + last_start + " to " + hour + ':' +  last_end);
 			last_start = current_start; last_end =  current_end;
 		   }
 		}		
 	}
 	);
-	clean_ranges.push(last_start + " to " + last_end);
 
-
-	$('#ranges').html('<PRE>' + clean_ranges.join("\n") + '</PRE>');
+	if (last_start) {
+		clean_ranges.push(hour + ':' + last_start + " to " + hour + ':' + last_end);
+	}
+	update_ranges(hour,clean_ranges);
+	show_ranges();
 }
 
 function toggle_set(el)
@@ -107,4 +141,17 @@ $(document).ready(function() {
 
 	}
 	);
+	$(".dim_input").on('change',function() {
+
+		document.documentElement.style.setProperty('--ss_top',$('#top').val() );
+		document.documentElement.style.setProperty('--ss_left',$('#left').val() );
+		document.documentElement.style.setProperty('--ss_right',$('#right').val() );
+		document.documentElement.style.setProperty('--ss_bottom',$('#bottom').val());
+	
+		console.log('dimensions: top:' + $('#top').val() + ' l:' + $('#left').val() + ' r:'  + $('#right').val() + ' b:' +  $('#bottom').val() );
+	});
+
+
+		
+	show_ranges();
 });

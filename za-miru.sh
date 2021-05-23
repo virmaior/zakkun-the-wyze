@@ -4,20 +4,22 @@ cwd=$(pwd)
 typeset -Z 2 minute=0
 
 
+
+
 for FILE in ./*/
 do
 	typeset -i -Z 2 cminute=00
 	hour=${FILE:2:2}
-	echo "$COUNTER == $FILE "	
+	echo "$COUNTER == $FILE "
 	target=$cwd/screens$hour.html
 	cp za-miru-top.html  $target
-	
+	echo '<div class="za_top_DIV" hour="'$hour'">'$hour'</div>' >> $target	
 	echo '<div class="zminute_DIV" minute="00"><div class="zm_marker">00</div>' >> $target
 	cd "$FILE"
 	for i in screen*.jpg
 	do
 		minute=${i:6:2}
-		screen=${i:9:1}
+		screen=${i:9:3}
 		if [[ "${minute}" != "${cminute}" ]] 
 		then
 			echo '</div>' >> $target

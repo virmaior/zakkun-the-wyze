@@ -11,12 +11,12 @@ On its simplest level my goal is to automate the process of archiving footage by
 
 # Current Features
 
-As of 2021-05-23, I've got the following:
+As of 2021-05-26, I've got the following:
 * Script to download from Wyze V3's SD card to a computer (defaults to yesterday but can set the date using a parameter za-toru.sh  vs. za-toru.sh 20210516)
 * Produce screenshots (default of 3) (za-cap9.sh vs za-cap9.sh 5 )
 * Display the screenshots in HTML pages to identify activity (za-miru.sh)
-* Identify video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages )
-* Aggreggate continguous 1 minute clips that have activity using ffmpeg (za-horu.sh )
+* Identify video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages, then copy the "generate ranges" output to a string and send to za-horu.sh )
+* Aggreggate continguous 1 minute clips that have activity using ffmpeg based on the file from za-miru (za-horu.sh )
 
 
 
@@ -34,7 +34,7 @@ Different attempts (za-cap9.sh ):
 6. za-cap9.sh - same as 8 but with some ability to change number of screenshots
 
 
-My current goal is to improve za-horu.sh to take the output from the HTML page selections and use that to make the aggregate clips.
+za-horu.sh now takes the output from the HTML page selections and use that to make the aggregate clips.
 
 Another idea would be to compare the images from the screenshots and use that to speed up the process. Assume that change beneath a threshold is noise and only show items with higher change. But at least for our videos, I haven't seen a good tool that can detect Zaccheus very well.
 

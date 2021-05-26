@@ -1,5 +1,12 @@
 var za_classes = ['za_single','za_start','za_end','za_nothing'];
 
+function clear_ranges()
+{
+  localStorage.setItem("zaday",JSON.stringify({}));
+  $('#ranges').html('<PRE></PRE>');
+}
+
+
 function make_range(ranges,start,finish)
 {
    ranges.push(start + " to " + finish);
@@ -19,7 +26,7 @@ function show_ranges()
 		
 for(var hour in all_ranges)
 {
-	my_string +=  hour + '=' +   all_ranges[hour].join(";") + "\n";
+	my_string +=  hour + '=' +   all_ranges[hour].join(",") + " X \n";
 }
 
 		$('#ranges').html('<PRE>' + my_string +  '</PRE>');
@@ -154,4 +161,6 @@ $(document).ready(function() {
 
 		
 	show_ranges();
+	document.documentElement.style.setProperty('--minute_height',Math.floor($(".za_img[minute=00][screen=001]").height() + 1) + "px" );
+
 });

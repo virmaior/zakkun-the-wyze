@@ -8,17 +8,36 @@ pword=WYom2020
 
 if [ -n "$1" ]
  then
+	echo "date set to $1"
 	day=$1
 else
 	echo "no parameter given - assuming yesterday"
 	day=$(date -v-1d +%Y%m%d ) 
 fi
 
+
+typeset -Z 2 -i minhour=00
+typeset -Z 2 -i maxhour=23
+if [ -n "$2" ]
+then
+ minhour=$2
+fi
+if [ -n "$3" ]
+then
+ maxhour=$3
+fi
+
+
 if [ -d "$day" ]; then
-   echo "Directory exists $day -- aborting run"
-   exit;
+   if [ -n "$4"];
+   then
+     echo "directory exists $day -- override run"
+   else
+    echo "Directory exists $day -- aborting run"
+    exit 
+    fi
 else
-   echo "Directory doesn't exists"
+   echo "Directory doesn't exist"
 fi
 
 mkdir "$day"
@@ -33,19 +52,16 @@ printf "started boa on WYZE"
 }
 
 
+function hour_toru
+{
+	typeset -Z 2 -i hourp=$1
+	typeset -Z 2 -i minp
 
-#start_wyze_boa
-
-typeset -Z 2 -i hourp=0
-typeset -Z 2 -i minp
-
-for ((hour =00; hour <= 23; hour++)) 
-do
-
-	hourp=$hour
 	echo $hourp
+
 	mkdir $hourp
-	cd $hourp
+
+  	cd $hourp
 	for ((i = 00; i <= 59; i++)) 
 	do
 		minp=$i
@@ -55,4 +71,16 @@ do
   		curl -O $fullurl 
 	done
 	cd ..
+}
+
+
+#start_wyze_boa
+
+typeset -Z 2 -i hourp=0
+typeset -Z 2 -i minp
+
+for ((hour =$minhour; hour <= $maxhour; hour++)) 
+do
+	hour_toru $hour	
 done
+

@@ -38,7 +38,7 @@ ffmpeg -y \
   -f concat \
   -safe 0 \
   -i <(  for ((i = $stime; i <= $etime; i++)) ; do  minp=$i; echo "file "$cwd/$hour/$minp".mp4"; done) \
-  -c copy "$cwd/event$COUNTER.mkv"
+  -c copy "$cwd/$hour-$stime-event$COUNTER.mkv"
 
 }
 

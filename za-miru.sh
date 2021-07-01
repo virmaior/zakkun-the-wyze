@@ -2,20 +2,87 @@
 typeset -Z 2 -i COUNTER=0
 cwd=$(pwd)
 typeset -Z 2 minute=0
+typeset -i seconds=00
+typeset -i capcount=3
 
 
-
-
-for FILE in ./*/
+for ARGUMENT in "$@"
 do
+
+    KEY=$(echo $ARGUMENT | cut -f1 -d=)
+    VALUE=$(echo $ARGUMENT | cut -f2 -d=)   
+
+    case "$KEY" in
+	capcount)	capcount=${VALUE} ;;
+	s)    		s_hour=${VALUE} ;;     
+	e)		e_hour=${VALUE};;	
+            *)   
+    esac    
+
+
+done
+
+
+
+((capjump=60 / $capcount))
+
+ if [ -n "$s_hour" ]
+then
+	 if [ -n "$e_hour" ] 
+	then
+		echo "run range = " $s_hour to $e_hour
+
+	else
+		e_hour=$s_hour
+		echo "run range = " $s_hour to $e_hour
+
+	fi
+else
+echo "run greedy"
+fi
+
+echo "capcount=" $capcount " so " $capjump " captures per minute "
+
+
+
+function folder_tsukamu
+{
+	cd "$1"
+	
+for i in *.mp4
+  do 
+  	name=`echo "$i" | cut -d'.' -f1`
+  	echo "$name"
+	typeset -Z 3 -i smallcounter=0
+	ffmap=""
+	for ((seconds =00; seconds <= 59; seconds= seconds + capjump))
+	do
+		let smallcounter++
+		((mapnum=$smallcounter -1))
+		ffmap="$ffmap "'-ss 00:00:'$seconds'.00 -i '$i' -frames:v 1 -f image2 -map '$mapnum':v:0 screen'$name'-'$smallcounter'.jpg'
+	done
+
+	echo $ffmap
+
+	ffmpeg -hide_banner -loglevel error $(echo $ffmap) 
+done
+	cd "$cwd"
+
+}
+
+function folder_miru
+{
+	
+	fFILE=$1
+	hour=${fFILE:2:2}
 	typeset -i -Z 2 cminute=00
-	hour=${FILE:2:2}
-	echo "$COUNTER == $FILE "
+
 	target=$cwd/screens$hour.html
+	echo $target
 	cp za-miru-top.html  $target
 	echo '<div class="za_top_DIV" hour="'$hour'">'$hour'</div>' >> $target	
 	echo '<div class="zminute_DIV" minute="00"><div class="zm_marker">00</div>' >> $target
-	cd "$FILE"
+	cd "$fFILE"
 	for i in screen*.jpg
 	do
 		minute=${i:6:2}
@@ -35,6 +102,32 @@ do
 	cd "$cwd"
 	echo '</div>' >> $target
 	cat za-miru-bottom.html  >> $target
-	let COUNTER++
 
+}
+
+
+
+for FILE in ./*/
+do
+
+	echo "$COUNTER == $FILE "
+	hour=${FILE:2:2}
+	echo "looped"
+ 	if [ -n "$s_hour" ] 
+	then
+		if [ "$hour" -ge "$s_hour" ] 
+		then
+			echo "passed start"
+			if [ "$hour" -le "$e_hour" ] 
+			then
+				folder_tsukamu $FILE
+				folder_miru $FILE
+			fi
+		fi
+	else
+		folder_tsukamu $FILE
+		folder_miru $FILE
+	fi
+
+	let COUNTER++
 done

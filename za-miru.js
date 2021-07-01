@@ -30,6 +30,7 @@ for(var hour in all_ranges)
 }
 
 		$('#ranges').html('<PRE>' + my_string +  '</PRE>');
+		$('#run_string').html('zsh za-horu.sh ' + my_string.replace("\n"," "));
 	}
 }
 

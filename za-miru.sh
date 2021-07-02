@@ -15,7 +15,9 @@ do
     case "$KEY" in
 	capcount)	capcount=${VALUE} ;;
 	s)    		s_hour=${VALUE} ;;     
-	e)		e_hour=${VALUE};;	
+	e)		e_hour=${VALUE} ;;
+	skipcap)		skipcap=${VALUE} ;;	
+	skiphtml)	skiphtml=${VALUE} ;;
             *)   
     esac    
 
@@ -44,15 +46,23 @@ fi
 echo "capcount=" $capcount " so " $capjump " captures per minute "
 
 
+overwrite() { echo -e "\r\033[1A\033[0K$@"; }
+
 
 function folder_tsukamu
 {
+if [ -n "$skipcap" ] 
+then
+	echo "skipped capture phase"
+	return 1;
+fi
+
 	cd "$1"
-	
+	echo -n "start $1 - minute: "
 for i in *.mp4
   do 
   	name=`echo "$i" | cut -d'.' -f1`
-  	echo "$name"
+  	echo -n " $name "
 	typeset -Z 3 -i smallcounter=0
 	ffmap=""
 	for ((seconds =00; seconds <= 59; seconds= seconds + capjump))
@@ -62,16 +72,24 @@ for i in *.mp4
 		ffmap="$ffmap "'-ss 00:00:'$seconds'.00 -i '$i' -frames:v 1 -f image2 -map '$mapnum':v:0 screen'$name'-'$smallcounter'.jpg'
 	done
 
-	echo $ffmap
+	#overwrite $ffmap
 
 	ffmpeg -hide_banner -loglevel error $(echo $ffmap) 
 done
+	echo " done $1 "
+
 	cd "$cwd"
 
 }
 
 function folder_miru
 {
+if [ -n "$skiphtml" ] 
+then
+        echo "skipped HTML generation"
+        return 1;
+fi
+
 	
 	fFILE=$1
 	hour=${fFILE:2:2}
@@ -125,6 +143,7 @@ do
 			fi
 		fi
 	else
+
 		folder_tsukamu $FILE
 		folder_miru $FILE
 	fi

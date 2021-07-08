@@ -11,15 +11,31 @@ On its simplest level my goal is to automate the process of archiving footage by
 
 # Current Features
 
-As of 2021-07-01, I've got the following:
-* Script to download from Wyze V3's SD card to a computer (defaults to yesterday but can set the date using a parameter za-toru.sh  vs. za-toru.sh 20210516)
-* Produce screenshots and display the screenshots in HTML pages to identify activity (za-miru.sh can set the hour range using parameters s=00 e=23 -- defaults to greedy , can also set the number of screenshots using capcount=5 etc. )
+As of 2021-07-08, I've got the following:
+* Script to download from Wyze V3's SD card to a computer (za-toru.sh )
+* Produce screenshots and display the screenshots in HTML pages to identify activity (za-miru.sh )
 * Identify video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages, then copy the "generate ranges" output to a string and send to za-horu.sh )
 * Aggreggate continguous 1 minute clips that have activity using ffmpeg based on the file from za-miru (za-horu.sh )
 
 
 
 (とる means "to take" in Japanese and can refer both to (a) taking a picture　撮る, (b) taking an object　取る, and (c) taking food 採る ; みる means "to see" or "to watch"; ほる means "to bury" 掘る. These are all very good activities for a flying squirrel)
+
+# Parameters
+
+for za-toru.sh and za-miru.sh  
+1. d=20210708  - d sets the date in question
+2. s=0 - s sets the start hour
+3. e=12  e sets the end hour
+
+for za-toru.sh 
+1. cron = run for the previous hour
+2. m = add za-miru for the same hour
+
+for za-miru.sh
+1. capcount = set the number of screen captures per minute 
+2. skipcap = skip doing the screen captures
+3. skiphtml = skip making html pages to show the screen captures
 
 # Video Identification and Screenshot Browser (za-miru.sh)
 

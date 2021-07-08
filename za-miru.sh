@@ -14,17 +14,23 @@ do
 
     case "$KEY" in
 	capcount)	capcount=${VALUE} ;;
+	d)    		day=${VALUE} ;;     
 	s)    		s_hour=${VALUE} ;;     
 	e)		e_hour=${VALUE} ;;
 	skipcap)		skipcap=${VALUE} ;;	
 	skiphtml)	skiphtml=${VALUE} ;;
-            *)   
+	*)   
     esac    
 
 
 done
 
-
+if [ -n "$day" ]
+then
+  tgtd=$cwd/$day
+else
+  tgtd =$cwd
+fi
 
 ((capjump=60 / $capcount))
 
@@ -43,7 +49,7 @@ else
 echo "run greedy"
 fi
 
-echo "capcount=" $capcount " so " $capjump " captures per minute "
+echo "capcount=" $capcount " per minute so 1 capture every  " $capjump " seconds "
 
 
 overwrite() { echo -e "\r\033[1A\033[0K$@"; }
@@ -56,7 +62,7 @@ then
 	echo "skipped capture phase"
 	return 1;
 fi
-
+	cd $tgtd
 	cd "$1"
 	echo -n "start $1 - minute: "
 for i in *.mp4
@@ -77,8 +83,8 @@ for i in *.mp4
 	ffmpeg -hide_banner -loglevel error $(echo $ffmap) 
 done
 	echo " done $1 "
+	cd $cwd
 
-	cd "$cwd"
 
 }
 
@@ -90,12 +96,12 @@ then
         return 1;
 fi
 
-	
+	cd $cwd	
 	fFILE=$1
-	hour=${fFILE:2:2}
+	hour=${FILE:0-3:2}
 	typeset -i -Z 2 cminute=00
 
-	target=$cwd/screens$hour.html
+	target=$tgtd/screens$hour.html
 	echo $target
 	cp za-miru-top.html  $target
 	echo '<div class="za_top_DIV" hour="'$hour'">'$hour'</div>' >> $target	
@@ -117,29 +123,30 @@ fi
 		#echo  "$COUNTER - $i - " $minute $screen
 		echo '<div class="za_DIV" screen="'$screen'"><IMG minute='$minute' screen='$screen' class="za_img" src="'$hour'/'$i'" /></div>' >> $target
 	done
-	cd "$cwd"
 	echo '</div>' >> $target
+	cd $cwd
 	cat za-miru-bottom.html  >> $target
 
 }
 
 
 
-for FILE in ./*/
+for FILE in $tgtd/*/
 do
 
 	echo "$COUNTER == $FILE "
-	hour=${FILE:2:2}
-	echo "looped"
+	hour=${FILE:0-3:2}
  	if [ -n "$s_hour" ] 
 	then
 		if [ "$hour" -ge "$s_hour" ] 
 		then
-			echo "passed start"
+			echo "in range"
 			if [ "$hour" -le "$e_hour" ] 
 			then
 				folder_tsukamu $FILE
 				folder_miru $FILE
+			else 
+			echo "past range"
 			fi
 		fi
 	else

@@ -5,50 +5,64 @@ cwd=$(pwd)
 uname=root
 pword=WYom2020
 
+typeset -Z 2 -i minhour=00
+typeset -Z 2 -i maxhour=23
 
-if [ -n "$1" ]
- then
-	echo "date set to $1"
-	day=$1
+
+for ARGUMENT in "$@"
+do
+
+    KEY=$(echo $ARGUMENT | cut -f1 -d=)
+    VALUE=$(echo $ARGUMENT | cut -f2 -d=)   
+
+    case "$KEY" in
+	d)		day=${VALUE} ;;
+	s)    		minhour=${VALUE} ;;     
+	e)		maxhour=${VALUE} ;;
+	m)		miru=${VALUE} ;;	
+	cron)		cron=${VALUE} ;;
+	*)   
+    esac    
+
+done
+
+
+if [ -n "$cron" ]
+then
+	day=$(date -v-1H +%Y%m%d ) 
+	minhour=$(date -v-1H +%H)
+	maxhour=$(date -v-1H +%H)
+
+fi
+
+
+
+if [ -n "$day" ]
+then
+	echo "Ran with parameter d=$day "
 else
 	echo "no parameter given - assuming yesterday"
 	day=$(date -v-1d +%Y%m%d ) 
+	if [ -d "$day" ]; then
+    		echo "Directory exists $day -- aborting run"
+    		exit 
+	fi
 fi
 
 
-typeset -Z 2 -i minhour=00
-typeset -Z 2 -i maxhour=23
-if [ -n "$2" ]
-then
- minhour=$2
-fi
-if [ -n "$3" ]
-then
- maxhour=$3
-fi
 
+echo $day " from " $minhour " to " $maxhour
 
-if [ -d "$day" ]; then
-   if [ -n "$4"];
-   then
-     echo "directory exists $day -- override run"
-   else
-    echo "Directory exists $day -- aborting run"
-    exit 
-    fi
-else
-   echo "Directory doesn't exist"
-fi
 
 mkdir "$day"
 cd "$day" 
 
 function start_wyze_boa
 {
-printf "starting boa on WYZE"
-printf "$uname\r\n $pword\r\n cp /usr/boa/boa.conf /tmp/boa.conf \r\n /usr/boa/boa /media/mmc \r\n" | nc $wyzeip 1-8443 &&
+echo "starting boa on WYZE"
+echo -e "$uname\r\n $pword\r\n cp /usr/boa/boa.conf /tmp/boa.conf \r\n /usr/boa/boa /media/mmc \r\n" | nc $wyzeip 1-8443 
 
-printf "started boa on WYZE"
+echo "started boa on WYZE"
 }
 
 
@@ -83,4 +97,13 @@ for ((hour =$minhour; hour <= $maxhour; hour++))
 do
 	hour_toru $hour	
 done
+
+cd ..
+
+if [ -n "$miru" ] 
+then
+	echo "running miru"
+	zsh za-miru.sh d=$day s=$minhour e=$maxhour	
+fi
+
 

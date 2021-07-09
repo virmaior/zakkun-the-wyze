@@ -32,17 +32,18 @@ function datediff
 {
  if [[ "$myos" == "Darwin" ]]
  then
-	echo $(date $1 +$2)
+        echo $(date $1 +$2)
  else
-	if [ "$1" == "-v-1H" ]; then
-		echo $(date -date="1 hour ago" +\'$2\')
-	elif [ "$1" == "-v-1d" ]; then
-		echo $(date -date"=yesterday" +\'$2\')
-	else
-		exit -1
-	fi
+        if [[ "$1" == "-v-1H" ]]; then
+                echo $(date --date="1 hour ago" \+"$2")
+        elif [[ "$1" == "-v-1d" ]]; then
+                echo $(date --date="yesterday" \+"$2")
+        else
+                exit -1
+        fi
  fi 
 }
+
 
 
 if [ -n "$cron" ]
@@ -70,7 +71,6 @@ fi
 
 
 echo $day " from " $minhour " to " $maxhour
-exit
 
 mkdir "$day"
 cd "$day" 

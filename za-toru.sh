@@ -26,12 +26,30 @@ do
 
 done
 
+myos=$(uname)
+
+function datediff
+{
+ if [[ "$myos" == "Darwin" ]]
+ then
+	echo $(date $1 +$2)
+ else
+	if [ "$1" == "-v-1H" ]; then
+		echo $(date -date="1 hour ago" +\'$2\')
+	elif [ "$1" == "-v-1d" ]; then
+		echo $(date -date"=yesterday" +\'$2\')
+	else
+		exit -1
+	fi
+ fi 
+}
+
 
 if [ -n "$cron" ]
 then
-	day=$(date -v-1H +%Y%m%d ) 
-	minhour=$(date -v-1H +%H)
-	maxhour=$(date -v-1H +%H)
+	day=$(datediff -v-1H %Y%m%d ) 
+	minhour=$(datediff -v-1H %H)
+	maxhour=$(datediff -v-1H %H)
 
 fi
 
@@ -42,7 +60,7 @@ then
 	echo "Ran with parameter d=$day "
 else
 	echo "no parameter given - assuming yesterday"
-	day=$(date -v-1d +%Y%m%d ) 
+	day=$(datediff -v-1d %Y%m%d ) 
 	if [ -d "$day" ]; then
     		echo "Directory exists $day -- aborting run"
     		exit 
@@ -52,7 +70,7 @@ fi
 
 
 echo $day " from " $minhour " to " $maxhour
-
+exit
 
 mkdir "$day"
 cd "$day" 

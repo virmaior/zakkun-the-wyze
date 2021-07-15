@@ -1,27 +1,63 @@
 #!/bin/zsh
 typeset -i COUNTER=0
+
+
+for ARGUMENT in "$@"
+do
+
+    KEY=$(echo $ARGUMENT | cut -f1 -d=)
+    VALUE=$(echo $ARGUMENT | cut -f2 -d=)   
+
+    case "$KEY" in
+	f)		format=${VALUE} ;;
+	d)    		day=${VALUE} ;;     
+	i)		inp=${VALUE} ;;
+	*)   		echo $KEY  " " $VALUE ;;
+    esac    
+
+done
+
+if [ -z  "$inp" ]
+then
+	echo  "you must use i= to set an input"
+	exit
+fi
+
+if [ -z "$format" ] 
+then
+	format="mov"
+fi
+if [ -n "$day" ]
+then
+	echo "running in directory $day "
+	cd $day
+fi
 cwd=$(pwd)
 
 
 
 function make_event 
 {
-  IFS=" "
+  IFS=";"
+  desc=""
   typeset -i tpiece=0
-  for tp in $(echo "$2")
-  do
-	let tpiece++
-    	if [ "$tpiece" = "1" ]
-	then
-	    typeset -Z 2 -i stime=${tp[4,6]}
-	elif [ "$tpiece" = "3" ] 
-	then
-	    typeset -Z 2 -i etime=${tp[4,6]}
-	fi
-  done
+
+for ARGUMENT in $(echo "$2" )
+do
+
+    KEY=$(echo $ARGUMENT | cut -f1 -d:)
+    VALUE=$(echo $ARGUMENT | cut -f2 -d:)   
+
+    case "$KEY" in
+        s)            typeset -Z 2 -i stime=${VALUE} ;;
+        e)            typeset -Z 2 -i etime=${VALUE} ;; 
+        l)              desc=${VALUE} ;;
+        *)   
+    esac    
+
+done
   echo "outcome : $1 $stime $etime "
 	
-
   let	COUNTER++
   echo "$COUNTER == $cwd/event$COUNTER.mkv"
 
@@ -38,7 +74,7 @@ ffmpeg -y \
   -f concat \
   -safe 0 \
   -i <(  for ((i = $stime; i <= $etime; i++)) ; do  minp=$i; echo "file "$cwd/$hour/$minp".mp4"; done) \
-  -c copy "$cwd/$hour-$stime-event$COUNTER.mov"
+  -c copy "$cwd/$hour-$stime-event$COUNTER$desc.$format"
 
 }
 
@@ -54,16 +90,14 @@ function make_events
 }
 
 
-all=$@
 
 
 
-
-IFS="X"
-for i in $(echo "$all" )
+IFS="VVV"
+echo $inp
+for i in $(echo "$inp" )
 do
-	echo $i " hour row"
-	IFS="="
+	IFS=">"
         typeset -i piece=0
         typeset -Z 2 -i hour=00
 
@@ -73,8 +107,7 @@ do
 		if [ "$piece" = "1" ]
 		then
 			hour=$part
-		else
-	
+		else	
 			make_events $hour $part
 		fi
 		

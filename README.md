@@ -11,11 +11,13 @@ On its simplest level my goal is to automate the process of archiving footage by
 
 # Current Features
 
-As of 2021-07-15, I've got the following:
+As of 2021-07-28, I've got the following:
 * Script to download from Wyze V3's SD card to a computer (za-toru.sh )
 * Produce screenshots and display the screenshots in HTML pages to identify activity (za-miru.sh )
 * Identify and label video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages, then copy the "generate ranges" output to a string and send to za-horu.sh )
 * Aggreggate continguous 1 minute clips that have activity using ffmpeg based on the file from za-miru (za-horu.sh )
+* support for multiple cameras
+* support for cron style hourly running
 
 
 
@@ -27,6 +29,7 @@ for za-toru.sh and za-miru.sh
 1. d=20210708  - d sets the date in question
 2. s=0 - s sets the start hour
 3. e=12  e sets the end hour
+4. cam= sets the camera number (if not specificed assume 1)
 
 for za-toru.sh 
 1. cron = run for the previous hour
@@ -38,8 +41,20 @@ for za-miru.sh
 3. skiphtml = skip making html pages to show the screen captures
 
 for za-horu.sh
-1. i="22>s:19;e:20;l:wake_in_dark,s:39;e:41;l:hammock_stir_climb,s:45;e:57;l:returnVVV23>s:04;e:04,s:24;e:30;l:from_above,s:51;e:59;l:hammock_chill " (22 from 19 to 20 labelled "wake in dark" then 39 to 41 labelled "hammock stir climb" (required field)
+1. sudo zsh za-horu.sh d=20210724 i="h:23;c:1>s:00;e:06;l:feeding;c:1,s:18;e:29;l:hammock_left;c:1,s:47;e:59;l:hammock_left;c:1V h:23;c:3>s:00;e:06;l:feeding;c:3,s:18;e:29;l:hammock_left;c:3,s:47;e:59;l:hammock_left;c:3V h:23;c:4>s:00;e:06;l:feeding;c:4,s:19;e:29;l:hammock_left;c:4,s:48;e:59;l:hammock_left;c:4V "
 2. d=20210715 - specify the date (not required)
+
+the input parameter internally splits into two based on >
+
+First part:
+1. h = hour
+2. c = camera
+
+Second part:
+1. s=start minute
+2. e=end minute
+3. l=label
+4. c=camera
 
 # Video Identification and Screenshot Browser (za-miru.sh)
 
@@ -60,7 +75,6 @@ za-horu.sh now takes the output from the HTML page selections and use that to ma
 
 Another idea would be to compare the images from the screenshots and use that to speed up the process. Assume that change beneath a threshold is noise and only show items with higher change. But at least for our videos, I haven't seen a good tool that can detect Zaccheus very well.
 
-Also want to add multiple camera support
 
 
 # General Limitations

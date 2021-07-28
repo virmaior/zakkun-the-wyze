@@ -1,5 +1,6 @@
 #!/bin/zsh
 typeset -i COUNTER=0
+clips=$(pwd)"/clips"
 
 
 for ARGUMENT in "$@"
@@ -12,7 +13,8 @@ do
 	f)		format=${VALUE} ;;
 	d)    		day=${VALUE} ;;     
 	i)		inp=${VALUE} ;;
-	*)   		echo $KEY  " " $VALUE ;;
+        debug)          debug=${VALUE} ;;
+	*)   		echo "unknown: " $KEY  " " $VALUE ;;
     esac    
 
 done
@@ -25,7 +27,7 @@ fi
 
 if [ -z "$format" ] 
 then
-	format="mov"
+	format="mkv"
 fi
 if [ -n "$day" ]
 then
@@ -35,9 +37,23 @@ fi
 cwd=$(pwd)
 
 
+function switch_camera_dir
+{
+	cam=$1
+	if  [ "$1" = "1" ]
+	then
+		cd $cwd
+	else
+		cd $cwd
+		cd ..
+		cd $day-$cam
+	fi
+}
+
 
 function make_event 
 {
+  pth=$(pwd)
   IFS=";"
   desc=""
   typeset -i tpiece=0
@@ -59,22 +75,27 @@ done
   echo "outcome : $1 $stime $etime "
 	
   let	COUNTER++
-  echo "$COUNTER == $cwd/event$COUNTER.mkv"
-
+  product="$clips/$day-$hour-$stime-$cam-event$COUNTER$desc.$format"
+  echo -n "output file:"$product
   typeset -Z 2 -i minp=00
   for ((i = $stime; i <= $etime; i++)) 
   do
 	minp=$i
-	echo $cwd/$hour/$minp".mp4"
+	echo -n " " $pth/$hour/$minp".mp4"
   done
 
 
+if [ -z  "$debug" ]
+then
 
 ffmpeg -y \
   -f concat \
   -safe 0 \
-  -i <(  for ((i = $stime; i <= $etime; i++)) ; do  minp=$i; echo "file "$cwd/$hour/$minp".mp4"; done) \
-  -c copy "$cwd/$hour-$stime-event$COUNTER$desc.$format"
+  -i <(  for ((i = $stime; i <= $etime; i++)) ; do  minp=$i; echo "file "$pth/$hour/$minp".mp4"; done) \
+  -c copy "$product"
+
+
+fi
 
 }
 
@@ -93,7 +114,7 @@ function make_events
 
 
 
-IFS="VVV"
+IFS="V"
 echo $inp
 for i in $(echo "$inp" )
 do
@@ -101,14 +122,29 @@ do
         typeset -i piece=0
         typeset -Z 2 -i hour=00
 
-	for part in $(echo "$i" | sed -E -e 's/:[0-9]+$//'  ) 
+	for part in $(echo "$i" | sed -E -e 's/:[0-9]+$//' | sed -e 's/^[ \t]*//'   ) 
 	do
+		if [ -z "$part" ]; then
+			continue	
+		fi
 		let piece++
-		if [ "$piece" = "1" ]
-		then
-			hour=$part
-		else	
-			make_events $hour $part
+		echo $piece
+		if [ $(( piece % 2 )) -eq 1 ]; then
+			IFS=";"
+			for ARGUMENT in $(echo "$part"  )
+			do
+    				KEY=$(echo $ARGUMENT | cut -f1 -d:)
+    				VALUE=$(echo $ARGUMENT | cut -f2 -d:)
+    				case "$KEY" in
+        				h)            hour=${VALUE} ;;
+        				c)            cam=${VALUE} ;; 
+        				*)   
+    				esac 
+			done
+			echo "set hour to " $hour " and cam to " $cam 
+		else
+				switch_camera_dir $cam
+				make_events $hour $part
 		fi
 		
 	done

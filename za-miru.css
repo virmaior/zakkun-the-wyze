@@ -2,6 +2,7 @@ BODY {
  margin-bottom:20px;
  margin-left:0;
  margin-right:0;
+ margin-top:35px;
 }
 :root {
  --ss_top:0;
@@ -46,6 +47,37 @@ height:auto;
  width:99%;
  z-index:20;
 }
+
+.za_top_DIV {
+ display:flex;
+ position:fixed;
+ z-index:15;
+ top:0;
+ width: calc(100% - 80px);
+ height:35px;
+ background-color:#ccc;
+}
+.za_day , .za_hour , .za_cam {
+ border:2px solid grey;
+ padding:5px;
+ font-size:1.5em;
+ text-align:right;
+ 
+}
+.za_day {
+ color:black;
+ width:20%;
+}
+.za_hour {
+ color:blue;
+ width:15%;
+}
+.za_cam {
+ color:purple;
+ width:15%;;
+}
+
+
 .sb_DIV {
 	font-size:12px;
 	border-top:2px solid #ccc;
@@ -120,6 +152,11 @@ height:auto;
 	/*position: fixed;*/
 	width: 50vw;
 }
+
+.za_DIV:last-child:hover {
+	left:-20vw !important;
+}
+
 .za_single {
  	background-color:#7fa;
 }
@@ -159,4 +196,44 @@ height:auto;
  border-radius:3px;
  width:100%; 
  background-color:#ccc;
+}
+
+
+.output_row {
+ border:1px solid blue;
+ padding:2px;
+ display:flex;
+ flex-wrap:wrap;
+}
+.cam_1 {
+	background-color: rgba(255, 140, 84, 0.75);
+}
+.cam_2 {
+	background-color:rgba(255, 255, 84, 0.75);
+}
+.cam_3 {
+	background-color: rgba(160, 255, 84, 0.75);
+}
+.cam_4 {
+	background-color: rgba(160, 162, 226, 0.75);
+}
+.html_range {
+	padding-top:1em;
+	 border:1px solid black;
+ 	border-radius:3px;
+ 	position:relative;
+	min-width:60px;
+	height:45px;
+}
+.range_start {
+	position:absolute;
+	top:0;
+ 	left:0;
+	color:red;
+}
+.range_end {
+	position:absolute;
+	right:0;
+	top:0;
+	color:blue;
 }

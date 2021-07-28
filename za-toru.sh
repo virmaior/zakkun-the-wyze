@@ -1,6 +1,6 @@
 #!/bin/zsh
 typeset -i COUNTER=0
-wyzeip=192.168.3.17
+wyzeip=192.168.3.101
 cwd=$(pwd)
 uname=root
 pword=WYom2020
@@ -21,6 +21,8 @@ do
 	e)		maxhour=${VALUE} ;;
 	m)		miru=${VALUE} ;;	
 	cron)		cron=${VALUE} ;;
+	ip)		wyzeip=${VALUE}} ;;
+	cam)		cam=${VALUE} ;;
 	*)   
     esac    
 
@@ -32,18 +34,17 @@ function datediff
 {
  if [[ "$myos" == "Darwin" ]]
  then
-        echo $(date $1 +$2)
+	echo $(date $1 +$2)
  else
-        if [[ "$1" == "-v-1H" ]]; then
-                echo $(date --date="1 hour ago" \+"$2")
-        elif [[ "$1" == "-v-1d" ]]; then
-                echo $(date --date="yesterday" \+"$2")
-        else
-                exit -1
-        fi
+	if [[ "$1" == "-v-1H" ]]; then
+		echo $(date --date="1 hour ago" \+"$2")
+	elif [[ "$1" == "-v-1d" ]]; then
+		echo $(date --date="yesterday" \+"$2")
+	else
+		exit -1
+	fi
  fi 
 }
-
 
 
 if [ -n "$cron" ]
@@ -51,7 +52,7 @@ then
 	day=$(datediff -v-1H %Y%m%d ) 
 	minhour=$(datediff -v-1H %H)
 	maxhour=$(datediff -v-1H %H)
-
+	miru=yes
 fi
 
 
@@ -72,15 +73,30 @@ fi
 
 echo $day " from " $minhour " to " $maxhour
 
-mkdir "$day"
-cd "$day" 
+if [ -n "$cam" ] 
+then
+	echo "running on camera $cam"
+	mkdir "$day-$cam"
+	cd "$day-$cam"
+	if [ "$cam" = "2" ]
+	then
+		wyzeip=192.168.3.102
+	elif [ "$cam" = "3" ]
+	then
+		wyzeip=192.168.3.103
+	elif [ "$cam" = "4" ]
+	then
+		wyzeip=192.168.3.104
+	fi
+else
+	wyzeip=192.168.3.101
+	mkdir "$day"
+	cd "$day"
+fi
 
 function start_wyze_boa
 {
-echo "starting boa on WYZE"
-echo -e "$uname\r\n $pword\r\n cp /usr/boa/boa.conf /tmp/boa.conf \r\n /usr/boa/boa /media/mmc \r\n" | nc $wyzeip 1-8443 
-
-echo "started boa on WYZE"
+ (printf '%s\r\n\r\n' "$uname"; sleep 5; printf '%s\r\n' "$pword"; sleep 5; printf 'cp /usr/boa/boa.conf /tmp/boa.conf\r\n'; sleep 5; printf '/usr/boa/boa /media/mmc \r\n') |   nc -vDt4 $wyzeip 23 -i1 
 }
 
 
@@ -94,14 +110,15 @@ function hour_toru
 	mkdir $hourp
 
   	cd $hourp
-	for ((i = 00; i <= 59; i++)) 
-	do
-		minp=$i
-		url=$day/$hourp/$minp.mp4
-		fullurl=$wyzeip/SDPath/record/$url
-		echo $fullurl
-  		curl -O $fullurl 
-	done
+	curl -O  http://$wyzeip"/SDPath/record/"$day/$hourp"/[00-59].mp4" 
+	#for ((i = 00; i <= 59; i++)) 
+	#do
+	#	minp=$i
+	#	url=$day/$hourp/$minp.mp4
+	#	fullurl=$wyzeip/SDPath/record/$url
+	#	echo $fullurl
+  	#	curl -O $fullurl 
+	#done
 	cd ..
 }
 
@@ -121,7 +138,11 @@ cd ..
 if [ -n "$miru" ] 
 then
 	echo "running miru"
-	zsh za-miru.sh d=$day s=$minhour e=$maxhour	
+	if [ -n "$cam" ]
+	then
+		camstring='cam='$cam
+	fi
+	zsh za-miru.sh d=$day s=$minhour e=$maxhour $camstring
 fi
 
 

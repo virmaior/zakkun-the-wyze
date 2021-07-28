@@ -19,18 +19,29 @@ do
 	e)		e_hour=${VALUE} ;;
 	skipcap)		skipcap=${VALUE} ;;	
 	skiphtml)	skiphtml=${VALUE} ;;
+	cam)		cam=${VALUE} ;;
 	*)   
     esac    
 
 
 done
 
-if [ -n "$day" ]
+if [ -z "$cam" ]
 then
-  tgtd=$cwd/$day
-else
-  tgtd =$cwd
+
+	cam=1
+	if [ -n "$day" ]
+	then
+  		tgtd=$cwd/$day
+	else
+  		tgtd =$cwd
+  		day=$(basename) 
+	fi
+
+else 
+	tgtd=$cwd/$day-$cam
 fi
+
 
 ((capjump=60 / $capcount))
 
@@ -104,7 +115,7 @@ fi
 	target=$tgtd/screens$hour.html
 	echo $target
 	cp za-miru-top.html  $target
-	echo '<div class="za_top_DIV" hour="'$hour'">'$hour'</div>' >> $target	
+	echo '<div class="za_top_DIV" day="'$day'"  hour="'$hour'" cam="'$cam'"><div class="za_day">'$day '</div><div class="za_hour">'$hour '</div><div class="za_cam">'$cam'</div></div>' >> $target	
 	echo '<div class="zminute_DIV" minute="00"><div class="zm_marker">00</div>' >> $target
 	cd "$fFILE"
 	for i in screen*.jpg

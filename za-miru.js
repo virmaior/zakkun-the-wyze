@@ -8,44 +8,100 @@ function clear_ranges()
 }
 
 
-function make_range(ranges,start,finish, range_label)
+function make_range(ranges,start,finish, range_label,cam)
 {
-	var rname = "";
-   	if  (range_label) { 
-		if (range_label != "undefined") {
-		rname = ";l:" + range_label; 
+	my_range = {"s": start , "e" : finish};
+        if  (range_label) { 
+                if (range_label != "undefined") {
+			my_range["label"] = range_label;
+                }
+        }
+	if (cam) {
+		if (cam != "undefined") {
+			my_range["cam"] = cam;
 		}
 	}
-   ranges.push("s:" + start + ";e:" + finish + rname);
+   ranges.push(my_range);
 }
 
+
+function zsh_decode_item(my_range)
+{
+        var item_text = "s:" + my_range["s"] + ";e:" + my_range["e"];
+	if (my_range["label"]) { item_text += ';l:' + my_range["label"]; }
+        if (my_range["cam"]) { item_text += ';c:' + my_range["cam"]; }
+        return item_text;
+}
+
+
+function zsh_decode(my_ranges)
+{
+       var  zsh_output = [];
+        my_ranges.forEach(
+	function(item,index){
+                zsh_output.push( zsh_decode_item(item));
+        });
+        return zsh_output.join(',');
+
+}
+
+function html_decode(my_ranges) 
+{
+	var  html_output = "";
+	my_ranges.forEach(function(item,i){
+		html_output  += html_decode_item(item);
+	});
+	return html_output;
+}
+
+
+function html_decode_item(my_range)
+{
+	console.log(my_range);
+	var my_cam = 1;
+	if (my_range["cam"] ) {  my_cam = my_range["cam"];  }
+	var item_text =  '<div class="range_start">' + my_range["s"] + '</div><div class="range_end">' + my_range["e"] + '</div>'; 
+	if (my_range["label"]) { item_text += '<div class="range_label">' + my_range["label"] + '</div>'; }
+        //if (my_range["cam"] ) { item_text += '<div class="range_cam">' + my_cam + '</div>'; }
+
+	return '<div class="html_range cam_' + my_cam + '">' +  item_text + '</div>';
+//	var pieces =  item_text.split(';');
+	
+}
 
 
 function show_ranges()
 {
 	var zaday = localStorage.getItem("zaday");
-	if (zaday) {
-		var all_ranges =  JSON.parse(zaday);
-		console.log(all_ranges);
-		var my_string = "";
-		
-for(var hour in all_ranges)
-{
-	my_string +=  hour + '>' +   all_ranges[hour].join(",") + "\n";
-}
-
-		$('#ranges').html('<PRE>' + my_string +  '</PRE>');
-		$('#run_string').html('zsh za-horu.sh i="' + my_string.replace("\n","VVV") + '"');
+	if (!zaday) {
+		return false;
 	}
+	var all_ranges =  JSON.parse(zaday);
+	console.log(all_ranges);
+	var my_string = "";
+  	var cam = $(".za_top_DIV").attr('cam');
+	var html_output = "";
+	for(var hour in all_ranges)
+	{
+		my_string +=  hour + '>' +   zsh_decode(all_ranges[hour]) + "V\n";
+		html_output += '<div class="output_row"><div class="output_hour">' + hour + '</div>' +  html_decode(all_ranges[hour]) + '</div>';
+		console.log(my_string);
+	}
+
+        var day = $(".za_top_DIV").attr('day');
+	
+	$('#ranges').html('<PRE>' + html_output +  '</PRE>');
+	$('#run_string').html('sudo zsh za-horu.sh d=' + day  + '  i="' + my_string + '"');
+	
 }
 
-function update_ranges(hour,clean_ranges)
+function update_ranges(hour,cam,clean_ranges)
 {
 	var zaday = localStorage.getItem("zaday");
 	if (zaday) {
 	var all_ranges =  JSON.parse(zaday);
 	} else { all_ranges = {} }
-	all_ranges[hour] = clean_ranges;
+	all_ranges["h:" + hour + ";c:" +  cam ] = clean_ranges;
 	localStorage.setItem('zaday',JSON.stringify(all_ranges));
 
 }
@@ -54,7 +110,7 @@ function get_range_name(minute)
 {
 		if ($('.range_label[minute="' + minute +  '"]').length) {
 			//console.log("had range label " +  $('.range_label[minute="' + minute +  '"]').val()) ;
-			var rrange  = $('.range_label[minute="' + minute +  '"]').val();	
+			var rrange  = $('.range_label[minute="' + minute +  '"]').val();
 			if (rrange != "") { 
 						        return rrange.replace(/ /g,"_"); 
 			}
@@ -69,12 +125,14 @@ function generate_ranges()
 	var first_minute = false;
 	var tight_interval = 1;
 	var range_name = false;
+
+        var cam = $(".za_top_DIV").attr('cam');
 	$('.sb_DIV').each(function(){
 	    var minute = $(this).attr('minute');
 		if ($(this).hasClass('za_single')) {
 			if (!first_minute) {
 			     var range_name = get_range_name(minute);
-				make_range(ranges,minute,minute,range_name);
+				make_range(ranges,minute,minute,range_name,cam);
 
 			}
 
@@ -84,7 +142,7 @@ function generate_ranges()
 		}
 		if ($(this).hasClass('za_end')) {
 			var range_name = get_range_name(first_minute);
-			make_range(ranges,first_minute,minute,range_name);
+			make_range(ranges,first_minute,minute,range_name,cam);
 			first_minute = false;
 			range_name = false;
 		}
@@ -95,7 +153,7 @@ function generate_ranges()
 		
 		console.log("determined final block is active");
         	var range_name = get_range_name(first_minute);
-		make_range(ranges,first_minute,59,range_name);
+		make_range(ranges,first_minute,59,range_name,cam);
 	 }
 
 	console.log("tidying ranges");	
@@ -106,31 +164,34 @@ function generate_ranges()
 	var last_name_range =false;
 	ranges.forEach(
 	function (item,index) {
-		obj ={};
+		/* obj ={};
 	   	var parts = item.split(';');
 		var i;
 		for (i in parts) {
 			parts[i] = parts[i].split(":");
 			obj[parts[i][0]]=parts[i][1];
-		}
-		var current_start = obj.s;
-		var current_end = obj.e;
-	        var range_name  = obj.l;
+		}*/
+		console.log(item);
+		var current_start = item.s;
+		var current_end = item.e;
+	        var range_name  = item.label;
 		if (!last_start) { last_start = current_start; last_end =  current_end; last_range_name = range_name; }
 		else { 
 		   if (current_start == (last_end + 1)) {
 			last_end = current_end;
 		   } else {
-			make_range(clean_ranges,last_start,last_end,last_range_name);
+			make_range(clean_ranges,last_start,last_end,last_range_name,cam);
 			last_start = current_start; last_end =  current_end; last_range_name = range_name;
 		   }
-		}}
-	);
+		}
+		console.log(clean_ranges);
+	});
 
 	if (last_start) {
-		make_range(clean_ranges,last_start,last_end,last_range_name);
+		make_range(clean_ranges,last_start,last_end,last_range_name,cam);
 	}
-	update_ranges(hour,clean_ranges);
+	console.log(clean_ranges);
+	update_ranges(hour,cam,clean_ranges);
 	show_ranges();
 }
 
@@ -167,6 +228,7 @@ function toggle3(minute)
 }
 
 $(document).ready(function() {
+	$(".za_top_DIV").addClass("cam_" + $(".za_top_DIV").attr('cam'));
 	$(".zminute_DIV").each(function(){
 		var minute = $(this).attr('minute');
 

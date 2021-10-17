@@ -1,5 +1,5 @@
 BODY {
- margin-bottom:20px;
+ margin-bottom:150px;
  margin-left:0;
  margin-right:0;
  margin-top:35px;
@@ -10,7 +10,7 @@ BODY {
  --ss_right:0;
  --ss_bottom:0;
  --minute_height:800px;
-  
+ --minute_width:1.6%;  
 }
 FORM {
  margin:0;
@@ -37,13 +37,10 @@ height:auto;
 }
 
 #select_bar {
- position:fixed;
- bottom:0;
- height:20px;
+ position:absolute;;
+ top:0;
  border-top:2px solid blue;
  background-color:#ddd;
- display:flex;
- bottom:0;
  width:99%;
  z-index:20;
 }
@@ -55,7 +52,7 @@ height:auto;
  top:0;
  width: calc(100% - 80px);
  height:35px;
- background-color:#ccc;
+ background-color:var(--bg);
 }
 .za_day , .za_hour , .za_cam {
  border:2px solid grey;
@@ -83,9 +80,10 @@ height:auto;
 	border-top:2px solid #ccc;
  	border-left:2px solid #ccc;
 	border-right:2px solid #ccc;
- 	border-radius-5px;
- 	margin:2px;
- 	flex:1 0 0;
+ 	border-radius:3px;
+ 	width: var(--minute_width);
+	left: calc( (100% - 60 * var(--minute_width)) + var(--minute) * var(--minute_width)); 
+       position:absolute;
  	font-family:monospace;
 }
 
@@ -105,7 +103,7 @@ height:auto;
 	width:100%;
 	padding-left:20px;
 	padding-bottom:5px;
-
+	display:flex;
 }
 .za_DIV { 
 	text-align: right;
@@ -123,8 +121,8 @@ height:auto;
 	position:absolute;
 	left: calc( var(--ss_left)     * 1% );
 	top:  calc( var(--ss_top)      * 1% );
-	width:  calc( 100% - ( var(--ss_left) * 1%  ) + ( var(--ss_right) * 1% ) );
-	height: calc( 100% - ( var(-ss_top) * 1%  )  + ( var(--ss_bottom) * 1% ) );
+	max-width:  calc( 100% - ( var(--ss_left) * 1%  ) + ( var(--ss_right) * 1% ) );
+	max-height: calc( 100% - ( var(--ss_top) * 1%  )  + ( var(--ss_bottom) * 1% ) );
 }
 
 .za_DIV:after {
@@ -149,8 +147,9 @@ height:auto;
  	top: 10px;
 	border: 2px solid black;
 	border-radius: 3px;
-	/*position: fixed;*/
 	width: 50vw;
+	max-width:initial;
+	max-height:initial;
 }
 
 .za_DIV:last-child:hover {
@@ -167,6 +166,22 @@ height:auto;
 .za_end {
 	background-color:#7af;
 	border-left:0 !important;
+}
+.za_continue {
+	background-color:orange;
+}
+
+.za_start_weak {
+ 	border-top:2px solid red;
+	background: linear-gradient(-45deg, red 30%, red 10%, var(--bg) 10%) !important;
+}
+.za_continue_weak  {
+        background: linear-gradient(-45deg, orange 30%, orange 10%, var(--bg) 10%) !important;
+}
+
+.za_end_weak {
+        background: linear-gradient(-45deg, blue 30%, blue 10%, var(--bg) 10%) !important;
+	border-bottom:2px solid blue;
 }
 
 .range_tools {
@@ -190,41 +205,95 @@ height:auto;
 }
 
 #ranges {
- min-height:300px;
+ padding-top:15px;
  font-family: MonoSpace;
  border:2px solid black;
  border-radius:3px;
- width:100%; 
+ width:calc(100% - 4px);
+ position:relative;; 
  background-color:#ccc;
+ position:fixed;
+ bottom:0;
+ max-height:45px;
+ z-index:200;
+}
+#ranges:hover {
+ height:auto;
+ max-height:inherit;
+}
+
+.range_label {
+  z-index:200;
+  flex:1 0 0;
 }
 
 
 .output_row {
- border:1px solid blue;
- padding:2px;
- display:flex;
- flex-wrap:wrap;
+ height:10px;
 }
+
+#ranges:hover .output_row {
+ padding:2px;
+ height:45px;
+}
+
+
 .cam_1 {
-	background-color: rgba(255, 140, 84, 0.75);
+	--bg: rgba(255, 140, 84, 0.75);
+	--cam:1;
 }
 .cam_2 {
-	background-color:rgba(255, 255, 84, 0.75);
+	--bg:rgba(255, 255, 84, 0.75);
+	--cam:2;
 }
 .cam_3 {
-	background-color: rgba(160, 255, 84, 0.75);
+	--bg: rgba(160, 255, 84, 0.75);
+	--cam:3;
 }
 .cam_4 {
-	background-color: rgba(160, 162, 226, 0.75);
+	--bg: rgba(160, 162, 226, 0.75);
+	--cam:4;
 }
+.cam_5 {
+	--bg: rgba(0,200,255, 0.75);
+	--cam:5;
+}
+.output_hour {
+     	position: absolute;
+    	left: 0;
+    	width: calc(100% - 60 * var(--minute_width));
+   	 background-color: var(--bg);
+	max-height:10px;
+}
+
+#ranges:hover .output_row .output_hour , #ranges:hover .output_row .html_range
+{
+ max-height:initial;
+ min-height:45px;
+}
+#ranges:hover .output_row .html_range {
+ padding-top:1em;
+}
+
 .html_range {
-	padding-top:1em;
+        max-height:10px;
+	padding-top:5px;
 	 border:1px solid black;
  	border-radius:3px;
- 	position:relative;
-	min-width:60px;
-	height:45px;
+	background-color:var(--bg);
+	position: absolute;
+    	left: calc( (100% - 60 * var(--minute_width))  + var(--start) * var(--minute_width));
+    	width: calc( var(--rangewidth) * var(--minute_width));
 }
+
+#ranges:hover .output_row .html_range DIV {
+  font-size:100%;
+  display:block;
+}
+.range_start , .range_end {
+ display:none;
+}
+
 .range_start {
 	position:absolute;
 	top:0;
@@ -236,4 +305,38 @@ height:auto;
 	right:0;
 	top:0;
 	color:blue;
+}
+
+
+.sb_bonus_DIV:before {
+  content: attr(desc);
+  visibility: hidden;
+  opacity: 0;
+  width: 140px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 5px 0;
+  transition: opacity 1s ease-in-out;
+
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+}
+
+
+.mm_DIV {
+ width:40px;
+}
+.other_cams {
+ position:relative;
+ width:60%;
+}
+.other_cams DIV {
+ width:20%;
+ position:absolute;
+ left:calc( ( var(--cam) - 1 ) * 20% );
+ border:1px dotted gray;
 }

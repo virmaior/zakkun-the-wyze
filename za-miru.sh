@@ -126,7 +126,7 @@ fi
 		then
 			echo '</div>' >> $target
 
-			echo '<div class="zminute_DIV" minute="'$minute'"><div class="zm_marker">'$minute'</div>' >> $target
+			echo '<div class="zminute_DIV" minute="'$minute'"><div class="zm_marker"><div class="mm_DIV">'$minute'</div></div>' >> $target
 			cminute=$minute
 		
 		fi

@@ -11,12 +11,13 @@ On its simplest level my goal is to automate the process of archiving footage by
 
 # Current Features
 
-As of 2021-07-28, I've got the following:
+As of 2021-10-18, I've got the following:
 * Script to download from Wyze V3's SD card to a computer (za-toru.sh )
 * Produce screenshots and display the screenshots in HTML pages to identify activity (za-miru.sh )
 * Identify and label video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages, then copy the "generate ranges" output to a string and send to za-horu.sh )
 * Aggreggate continguous 1 minute clips that have activity using ffmpeg based on the file from za-miru (za-horu.sh )
 * support for multiple cameras
+* diplay multiple cameras in an expandable bottom timeline so that footage can be lined up.
 * support for cron style hourly running
 
 

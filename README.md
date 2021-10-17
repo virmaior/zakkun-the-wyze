@@ -17,7 +17,7 @@ As of 2021-10-18, I've got the following:
 * Identify and label video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages, then copy the "generate ranges" output to a string and send to za-horu.sh )
 * Aggreggate continguous 1 minute clips that have activity using ffmpeg based on the file from za-miru (za-horu.sh )
 * support for multiple cameras
-* diplay multiple cameras in an expandable bottom timeline so that footage can be lined up.
+* display multiple cameras in an expandable bottom timeline so that footage can be lined up.
 * support for cron style hourly running
 
 

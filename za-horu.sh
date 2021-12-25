@@ -88,7 +88,7 @@ done
 if [ -z  "$debug" ]
 then
 
-ffmpeg -y \
+ffmpeg -hide_banner -y \
   -f concat \
   -safe 0 \
   -i <(  for ((i = $stime; i <= $etime; i++)) ; do  minp=$i; echo "file "$pth/$hour/$minp".mp4"; done) \

@@ -1,6 +1,6 @@
 #!/bin/zsh
 typeset -i COUNTER=0
-wyzeip=192.168.3.101
+wyzeip=192.168.4.101
 cwd=$(pwd)
 uname=root
 pword=WYom2020
@@ -17,12 +17,13 @@ do
 
     case "$KEY" in
 	d)		day=${VALUE} ;;
-	s)    		minhour=${VALUE} ;;     
+	s)    		minhour=${VALUE} ;;
 	e)		maxhour=${VALUE} ;;
-	m)		miru=${VALUE} ;;	
+	m)		miru=${VALUE} ;;
 	cron)		cron=${VALUE} ;;
 	ip)		wyzeip=${VALUE}} ;;
 	cam)		cam=${VALUE} ;;
+	skip)		skip=${VALUE} ;;
 	*)   
     esac    
 
@@ -80,16 +81,19 @@ then
 	cd "$day-$cam"
 	if [ "$cam" = "2" ]
 	then
-		wyzeip=192.168.3.102
+		wyzeip=192.168.4.102
 	elif [ "$cam" = "3" ]
 	then
-		wyzeip=192.168.3.103
+		wyzeip=192.168.4.103
 	elif [ "$cam" = "4" ]
 	then
-		wyzeip=192.168.3.104
+		wyzeip=192.168.4.104
+	elif [ "$cam" = "5" ]
+	then
+		wyzeip=192.168.4.105
 	fi
 else
-	wyzeip=192.168.3.101
+	wyzeip=192.168.4.101
 	mkdir "$day"
 	cd "$day"
 fi
@@ -125,6 +129,9 @@ function hour_toru
 
 #start_wyze_boa
 
+if [ -z "$skip"]
+then
+
 typeset -Z 2 -i hourp=0
 typeset -Z 2 -i minp
 
@@ -132,6 +139,7 @@ for ((hour =$minhour; hour <= $maxhour; hour++))
 do
 	hour_toru $hour	
 done
+fi
 
 cd ..
 

@@ -1,5 +1,6 @@
 #!/bin/zsh
 typeset -Z 2 -i COUNTER=0
+cd /var/www/html
 cwd=$(pwd)
 typeset -Z 2 minute=0
 typeset -i seconds=00
@@ -17,7 +18,7 @@ do
 	d)    		day=${VALUE} ;;     
 	s)    		s_hour=${VALUE} ;;     
 	e)		e_hour=${VALUE} ;;
-	skipcap)		skipcap=${VALUE} ;;	
+	skipcap)	skipcap=${VALUE} ;;	
 	skiphtml)	skiphtml=${VALUE} ;;
 	cam)		cam=${VALUE} ;;
 	*)   
@@ -34,7 +35,7 @@ then
 	then
   		tgtd=$cwd/$day
 	else
-  		tgtd =$cwd
+  		tgtd=$cwd
   		day=$(basename) 
 	fi
 
@@ -154,8 +155,8 @@ do
 			echo "in range"
 			if [ "$hour" -le "$e_hour" ] 
 			then
-				folder_tsukamu $FILE
-				folder_miru $FILE
+				folder_tsukamu "$FILE"
+				folder_miru "$FILE"
 			else 
 			echo "past range"
 			fi

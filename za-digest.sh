@@ -79,20 +79,25 @@ function decode_minute
 	  fi
 	done
 
-
-	if [[ $pcount -eq 3 ]]
-	then	
-		ffmap[4]=' -f lavfi -i color=size=1920x1080:rate=15:color=blue:d=60'
-		let "pcount = pcount + 1"
-	fi
+	# https://stackoverflow.com/questions/42336195/after-merge-videos-the-duration-is-too-long-ffmpeg
+	# https://stackoverflow.com/questions/63429206/ffmpeg-xstack-mutiple-inputs-for-mosaic-video-output-extra-output-blank-scre
 
 	case "$pcount" in
 		1) echo "1 file so copy mode";;
-		2) filter='[0:v]'"$scaler2"'[4:v];[1:v]'"$scaler2"'[5:v];[4:v][5:v]hstack=inputs=2[v]';;
-		4) filter='[0:v]'"$scaler4"'[4:v];[1:v]'"$scaler4"'[5:v];[4:v][5:v]hstack=inputs=2[top];[2:v]'"$scaler4"'[6:v];[3:v]'"$scaler4"'[7:v];[6:v][7:v]hstack=inputs=2[bottom];[top][bottom]vstack=inputs=2[v]';;
-		5) filter='[0:v]'"$scaler5"'[5:v];[1:v]'"$scaler5"'[6:v];[2:v]'"$scaler5"'[7:v];[5:v][6:v][7:v]hstack=inputs=3[top];[3:v]'"$scaler4"'[8:v];[4:v]'"$scaler4"'[9:v];[8:v][9:v]hstack=inputs=2[bottom];[top][bottom]vstack=inputs=2[v]';;
+		2) filter='[0:v]'"$scaler2"'[4:v];[1:v]'"$scaler2"'[5:v];[4:v][5:v]xstack=inputs=2:layout=0_0|w0_0[vi];[vi]pad=1920:1080[v]';;
+		3) filter='[0:v]'"$scaler4"'[4:v];[1:v]'"$scaler4"'[6:v];[2:v]'"$scaler4"'[7:v];[4:v][6:v][7:v]xstack=inputs=3:layout=0_0|0_h0|w0_0|w0_h0:fill=blue[v]';;
+		4) filter='[0:v]'"$scaler4"'[4:v];[1:v]'"$scaler4"'[5:v];[2:v]'"$scaler4"'[6:v];[3:v]'"$scaler4"'[7:v];[4:v][5:v][6:v][7:v]xstack=inputs=4:layout=0_0|0_h0|w0_0|w0_h0[v]';;
+		5) filter='[0:v]'"$scaler5"'[5:v];[1:v]'"$scaler5"'[6:v];[2:v]'"$scaler5"'[7:v];[3:v]'"$scaler4"'[8:v];[4:v]'"$scaler4"'[9:v];[5:v][6:v][7:v][8:v][9:v]xstack=inputs=5;layout=0_0|0_h0|0_h1|w0_0|w0_h0[v]';;
 		*) minute_output "$pcount $realmin"  "$ffmap";;
 	esac
+
+
+	#if [[ $pcount -eq 3 ]]
+	#then	
+	#	ffmap[4]=' -f lavfi -i color=size=960x540:rate=15:color=blue:d=60'
+	#	let "pcount = pcount + 1"
+	#fi
+
 
 	IFS=" ";
 	outfile="clips/digest-$day-$realmin"
@@ -104,11 +109,11 @@ function decode_minute
 	brate="2500k"
 	if [[ $pcount -eq 1 ]] 
 	then
-		echo ffmpeg -hide_banner -loglevel  "$elevel"  $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -c copy "$outfile.mkv" 
-		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -c copy "$outfile.mkv" 
+		echo ffmpeg -hide_banner -loglevel  "$elevel"  $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
+		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
 	else if [[ $pcount -gt 1 ]]
-		echo ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "\"$filter\"" -map '"[v]"' -b:v "$brate" -vsync 2 -c:v "$accel" -an "$outfile.mp4"
-		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -b:v "$brate" -vsync 2 -c:v "$accel" -an  "$outfile.mp4"
+		echo ям	ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
+		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
 	fi 	
 
 }

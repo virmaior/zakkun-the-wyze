@@ -11,7 +11,9 @@ typeset -Z 4 emin=1440
 
 scaler4='scale=iw/2:ih/2'
 scaler2='scale=iw/2:ih/2'
-scaler5='scale=iw/3:ih/3'
+#scaler5='scale=iw/3:ih/3'
+scaler5='scale=640x360'
+scalerb='scale=960x540'
 
 for ARGUMENT in "$@"
 do
@@ -21,10 +23,15 @@ do
         d)      day=${VALUE} ;;
  	s)	smin=${VALUE} ;;
 	e)	emin=${VALUE} ;;
+	prun)	prun=${VALUE};; 
         *)	echo "unknown paramater"${AKEY};;
- 
    esac
 done
+
+if (( ${+prun} )) 
+then
+	echo "running with prun $prun"
+fi
 
 
 
@@ -87,16 +94,11 @@ function decode_minute
 		2) filter='[0:v]'"$scaler2"'[4:v];[1:v]'"$scaler2"'[5:v];[4:v][5:v]xstack=inputs=2:layout=0_0|w0_0[vi];[vi]pad=1920:1080[v]';;
 		3) filter='[0:v]'"$scaler4"'[4:v];[1:v]'"$scaler4"'[6:v];[2:v]'"$scaler4"'[7:v];[4:v][6:v][7:v]xstack=inputs=3:layout=0_0|0_h0|w0_0|w0_h0:fill=blue[v]';;
 		4) filter='[0:v]'"$scaler4"'[4:v];[1:v]'"$scaler4"'[5:v];[2:v]'"$scaler4"'[6:v];[3:v]'"$scaler4"'[7:v];[4:v][5:v][6:v][7:v]xstack=inputs=4:layout=0_0|0_h0|w0_0|w0_h0[v]';;
-		5) filter='[0:v]'"$scaler5"'[5:v];[1:v]'"$scaler5"'[6:v];[2:v]'"$scaler5"'[7:v];[3:v]'"$scaler4"'[8:v];[4:v]'"$scaler4"'[9:v];[5:v][6:v][7:v][8:v][9:v]xstack=inputs=5;layout=0_0|0_h0|0_h1|w0_0|w0_h0[v]';;
+		5) filter='[0:v]'"$scaler5"'[z1];[1:v]'"$scaler5"'[z2];[2:v]'"$scaler5"'[z3];[3:v]'"$scalerb"'[z4];[4:v]'"$scalerb"'[z5];[z1][z2][z3][z4][z5]xstack=inputs=5:layout=0_0|w0_0|w0+w1_0|0_h0|960_h0[vi];[vi]pad=1920:1080[v]';;
+		6) filter='[0:v]'"$scaler5"'[a1];[1:v]'"$scaler5"'[a2];[2:v]'"$scaler5"'[a3];[3:v]'"$scaler5"'[a4];[4:v]'"$scaler5"'[a5];[5:v]'"$scaler5"'[a6];[a1][a2][a3][a4][a5][a6]xstack=inputs=6:layout=0_0|w0_0|w0+w1_0|0_h0|w0_h0|w0+w1_h0[vi];[vi]pad=1920:1080[v]';;
 		*) minute_output "$pcount $realmin"  "$ffmap";;
 	esac
 
-
-	#if [[ $pcount -eq 3 ]]
-	#then	
-	#	ffmap[4]=' -f lavfi -i color=size=960x540:rate=15:color=blue:d=60'
-	#	let "pcount = pcount + 1"
-	#fi
 
 
 	IFS=" ";
@@ -107,7 +109,15 @@ function decode_minute
 	elevel="error"
 	#elevel="debug"
 	brate="2500k"
-	if [[ $pcount -eq 1 ]] 
+	if (( ${+prun} ))
+	then 
+		if [[ $pcount -eq "$prun" ]]
+		then
+			echo "only running for $prun"
+			echo ям	ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
+			ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
+		fi
+	else if [[ $pcount -eq 1 ]] 
 	then
 		echo ffmpeg -hide_banner -loglevel  "$elevel"  $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
 		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
@@ -115,7 +125,7 @@ function decode_minute
 		echo ям	ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
 		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
 	fi 	
-
+	fi
 }
 
 

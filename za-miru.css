@@ -11,7 +11,24 @@ BODY {
  --ss_bottom:0;
  --minute_height:800px;
  --minute_width:1.6%;  
+ --start_color:#0fa30f;
+ --end_color:#b9220a;
 }
+
+
+
+
+.zminute_DIV[zgm="2"] .za_img {
+  filter: brightness(50%) sepia(1)  hue-rotate(132deg) saturate(103.2%) brightness(91.2%) opacity(33%);
+  z-index:101;
+}
+.zminute_DIV[zgm="3"] .za_img {
+  filter: brightness(50%) sepia(1)  hue-rotate(264deg) saturate(103.2%) brightness(91.2%) opacity(33%);
+   z-index:102;
+}
+
+
+
 FORM {
  margin:0;
 }
@@ -160,11 +177,11 @@ height:auto;
  	background-color:#7fa;
 }
 .za_start {
- 	background-color:#f7a;
+ 	background-color:var(--start_color);
 	border-right:0 !important;
 }
 .za_end {
-	background-color:#7af;
+	background-color:var(--end_color);
 	border-left:0 !important;
 }
 .za_continue {
@@ -172,15 +189,15 @@ height:auto;
 }
 
 .za_start_weak {
- 	border-top:2px solid red;
-	background: linear-gradient(-45deg, red 30%, red 10%, var(--bg) 10%) !important;
+ 	border-top:2px solid green;
+	background: linear-gradient(-45deg, var(--start_color) 30%, var(--start_color) 10%, var(--bg) 10%) !important;
 }
 .za_continue_weak  {
         background: linear-gradient(-45deg, orange 30%, orange 10%, var(--bg) 10%) !important;
 }
 
 .za_end_weak {
-        background: linear-gradient(-45deg, blue 30%, blue 10%, var(--bg) 10%) !important;
+        background: linear-gradient(-45deg, var(--end_color) 30%, var(--end_color) 10%, var(--bg) 10%) !important;
 	border-bottom:2px solid blue;
 }
 
@@ -189,19 +206,20 @@ height:auto;
 }
 .generator , .clearer {
  color:white;
+ font-weight:bold;
  font-size:20px;
  text-align:center;
  border-radius:3px;
  width:50%;
 }
 .generator {
- border:2px solid pink;
- background-color:crimson; 
+ border:2px solid green;
+ background-color:#47af1d; 
 
 }
 .clearer {
- border:2px solid cyan;
- background-color:navy;
+ border:2px solid red;
+ background-color:crimson;
 }
 
 #ranges {
@@ -298,13 +316,13 @@ height:auto;
 	position:absolute;
 	top:0;
  	left:0;
-	color:red;
+	color:var(--start_color);
 }
 .range_end {
 	position:absolute;
 	right:0;
 	top:0;
-	color:blue;
+	color:var(--end_color);
 }
 
 
@@ -339,4 +357,7 @@ height:auto;
  position:absolute;
  left:calc( ( var(--cam) - 1 ) * 20% );
  border:1px dotted gray;
+}
+#run_string {
+font-family:monospace;
 }

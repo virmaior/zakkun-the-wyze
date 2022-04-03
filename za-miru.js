@@ -8,10 +8,18 @@ function clear_ranges()
   $('#run_string').html('');
 }
 
+function ungroup(zgroup)
+{
+			
+	console.log("unstack on " + $(this).attr('zgroup'));
+	$('.zminute_DIV[zgroup=' + zgroup  + ']').css('position','relative').css('margin-top',0).attr('zgm',0);
+
+}
+
+
 function faster_look(group_size)
 {
 	var item_count = 0;
-//	var row_height =  parseInt(document.documentElement.style.getPropertyValue('--minute_height'));
 	var row_height = Math.floor($(".zminute_DIV[minute=00]").outerHeight() );
         document.documentElement.style.setProperty('--zminute_height',(row_height + 1) + "px" );
 
@@ -19,18 +27,16 @@ function faster_look(group_size)
 		var group = Math.floor(item_count / group_size);
 		var num_in_group = item_count - ((group)  *  group_size);
 		$(this).attr('zgroup',group);
-		$(this).find('.za_img').css('opacity',(100 / group_size) + '%');
+		$(this).attr('zgm',num_in_group + 1);
 		if (num_in_group > 0) {
 			
 			$(this).css('position','absolute');
 			$(this).css('margin-top','-' + (row_height) + 'px');
 		}
-//		$(this).css('top', (group * row_height)  +  'px');
 		$(this).off('click').on('click',function(e){
-			console.log("unstack on " + $(this).attr('zgroup'));
 			e.preventDefault();
-		        $('.zminute_DIV[zgroup=' + $(this).attr('zgroup')  + ']').css('position','relative').css('margin-top',0).find('.za_img').css('opacity',1);
-		});
+  			ungroup($(this).attr('zgroup'));
+					});
 		item_count++; 
 	});
 }
@@ -167,9 +173,10 @@ function show_ranges()
 {
 	var zaday = localStorage.getItem("zaday");
 	if (!zaday) {
-		return false;
-	}
+		var  all_ranges  = [];
+	} else {
 	var all_ranges =  JSON.parse(zaday);
+	}
 	console.log(all_ranges);
 	var my_string = "";
   	var cam = $(".za_top_DIV").attr('cam');
@@ -371,6 +378,7 @@ $(document).ready(function() {
                 $(this).find('.zm_marker:first').append('<div class="other_cams" minute="' + minute  + '"></div>');
        });
 
+
 	//generate_select_bar();
 	$(".dim_input").on('change',function() {
 
@@ -383,12 +391,14 @@ $(document).ready(function() {
 	});
 
 
-		
+			
 	show_ranges();
 
 	$(document).find(".za_img:first").one('load',function(e){
-		console.log(Math.floor($(".za_img[minute=00][screen=001]").height() + 1));
-		document.documentElement.style.setProperty('--minute_height',Math.floor($(".za_img[minute=00][screen=001]").height() + 1) + "px" );
+		var row_height = Math.floor($(".za_img[minute=00][screen=001]").height() + 1);
+		if (Number.isNaN(row_height)) { row_height = 200; }
+		console.log('row height:' + row_height);
+		document.documentElement.style.setProperty('--minute_height',row_height + "px" );
 	}).each(function(){
 	if(this.complete) {
 		$(this).trigger('load');

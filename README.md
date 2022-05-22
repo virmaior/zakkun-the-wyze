@@ -8,16 +8,22 @@ My wife and I bought a Wyze v3 to figure out what our flying squirrel (Zaccheus)
 
 On its simplest level my goal is to automate the process of archiving footage by putting as many steps as possible into automation.
 
+# Prerequisites
+
+This assumes you either have [wyzeHacks](https://github.com/HclX/WyzeHacks) and have started up boa for file download
+*or* 
+You have installed github.com/gtxaspec/wz_mini_hacks on your camera and have an authroized_key
+
 
 # Current Features
 
-As of 2021-10-18, I've got the following:
-* Script to download from Wyze V3's SD card to a computer (za-toru.sh )
+As of 2022-05-22, I've got the following:
+* Script to download from Wyze V3's SD card to a computer (za-toru.sh ) for either wyze_hacks or wz_mini_hacks
 * Produce screenshots and display the screenshots in HTML pages to identify activity (za-miru.sh )
 * Identify and label video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages, then copy the "generate ranges" output to a string and send to za-horu.sh )
 * Aggreggate continguous 1 minute clips that have activity using ffmpeg based on the file from za-miru (za-horu.sh )
-* support for multiple cameras
-* display multiple cameras in an expandable bottom timeline so that footage can be lined up.
+* support for multiple cameras (it assumes their ip addresses are 101 , cam=2 is 102 , cam=3 is 103 ...
+* display marked video form multiple cameras in an expandable bottom timeline so that footage can be lined up.
 * support for cron style hourly running
 
 
@@ -35,6 +41,7 @@ for za-toru.sh and za-miru.sh
 for za-toru.sh 
 1. cron = run for the previous hour
 2. m = add za-miru for the same hour
+3. scp = will tell the system that you are using **wz_mini_hacks** and what subnet inside of 192.168 you are using for your cameras.
 
 for za-miru.sh
 1. capcount = set the number of screen captures per minute 

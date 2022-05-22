@@ -1,9 +1,9 @@
 #!/bin/zsh
 typeset -i COUNTER=0
-wyzeip=192.168.4.101
 cwd=$(pwd)
 uname=root
 pword=WYom2020
+netmask=192.168.4
 
 typeset -Z 2 -i minhour=00
 typeset -Z 2 -i maxhour=23
@@ -24,10 +24,18 @@ do
 	ip)		wyzeip=${VALUE}} ;;
 	cam)		cam=${VALUE} ;;
 	skip)		skip=${VALUE} ;;
+	scp)		scp=${VALUE} ;;
 	*)   
     esac    
 
 done
+
+if [ -n "$scp" ] 
+then
+	netmask=192.168.$scp
+fi
+
+
 
 myos=$(uname)
 
@@ -81,19 +89,19 @@ then
 	cd "$day-$cam"
 	if [ "$cam" = "2" ]
 	then
-		wyzeip=192.168.4.102
+		wyzeip=$netmask.102
 	elif [ "$cam" = "3" ]
 	then
-		wyzeip=192.168.4.103
+		wyzeip=$netmask.103
 	elif [ "$cam" = "4" ]
 	then
-		wyzeip=192.168.4.104
+		wyzeip=$netmask.104
 	elif [ "$cam" = "5" ]
 	then
-		wyzeip=192.168.4.105
+		wyzeip=$netmask.105
 	fi
 else
-	wyzeip=192.168.4.101
+	wyzeip=$netmask.101
 	mkdir "$day"
 	cd "$day"
 fi
@@ -109,7 +117,7 @@ function hour_toru
 	typeset -Z 2 -i hourp=$1
 	typeset -Z 2 -i minp
 
-	echo $hourp
+	echo "hour : " $hourp
 
 	mkdir $hourp
 
@@ -126,6 +134,17 @@ function hour_toru
 	cd ..
 }
 
+function hour_toru2
+{
+        typeset -Z 2 -i hourp=$1
+        echo "hour: " $hourp
+        mkdir $hourp
+        cd $hourp
+	#echo "root@"$wyzeip"/media/mmc/record/"$day/$hourp"/*.mp4"
+        scp -r  "root@"$wyzeip":/media/mmc/record/"$day/$hourp"/*.mp4"  "."
+	cd ..
+}
+
 
 #start_wyze_boa
 
@@ -137,7 +156,12 @@ typeset -Z 2 -i minp
 
 for ((hour =$minhour; hour <= $maxhour; hour++)) 
 do
-	hour_toru $hour	
+	if [ -n "$scp" ] 
+	then
+		hour_toru2 $hour
+	else	 
+		hour_toru $hour	
+	fi
 done
 fi
 

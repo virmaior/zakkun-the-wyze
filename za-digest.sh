@@ -91,9 +91,10 @@ function decode_minute
 
 	case "$pcount" in
 		1) echo "1 file so copy mode";;
-		2) filter='[0:v]'"$scaler2"'[4:v];[1:v]'"$scaler2"'[5:v];[4:v][5:v]xstack=inputs=2:layout=0_0|w0_0[vi];[vi]pad=1920:1080[v]';;
-		3) filter='[0:v]'"$scaler4"'[4:v];[1:v]'"$scaler4"'[6:v];[2:v]'"$scaler4"'[7:v];[4:v][6:v][7:v]xstack=inputs=3:layout=0_0|0_h0|w0_0|w0_h0:fill=blue[v]';;
-		4) filter='[0:v]'"$scaler4"'[4:v];[1:v]'"$scaler4"'[5:v];[2:v]'"$scaler4"'[6:v];[3:v]'"$scaler4"'[7:v];[4:v][5:v][6:v][7:v]xstack=inputs=4:layout=0_0|0_h0|w0_0|w0_h0[v]';;
+		2) filter='[0:v]'"$scaler2"'[z1];[1:v]'"$scaler2"'[z2];[z1][z2]xstack=inputs=2:layout=0_0|w0_0[vi];[vi]pad=1920:1080[v]';;
+		3) filter='[0:v]'"$scaler4"'[z1];[1:v]'"$scaler4"'[z2];[2:v]'"$scaler4"'[z3];[z1][z2][z3]xstack=inputs=3:layout=0_0|0_h0|w0_0|w0_h0[v]';;
+#		3) filter='[0:v]'"$scaler4"'[z1];[1:v]'"$scaler4"'[z2];[2:v]'"$scaler4"'[z3];[z1][z2][z3]xstack=inputs=3:layout=0_0|0_h0|w0_0|w0_h0:fill=blue[v]';;
+		4) filter='[0:v]'"$scaler4"'[z1];[1:v]'"$scaler4"'[z2];[2:v]'"$scaler4"'[z3];[3:v]'"$scaler4"'[z4];[z1][z2][z3][z4]xstack=inputs=4:layout=0_0|0_h0|w0_0|w0_h0[v]';;
 		5) filter='[0:v]'"$scaler5"'[z1];[1:v]'"$scaler5"'[z2];[2:v]'"$scaler5"'[z3];[3:v]'"$scalerb"'[z4];[4:v]'"$scalerb"'[z5];[z1][z2][z3][z4][z5]xstack=inputs=5:layout=0_0|w0_0|w0+w1_0|0_h0|960_h0[vi];[vi]pad=1920:1080[v]';;
 		6) filter='[0:v]'"$scaler5"'[a1];[1:v]'"$scaler5"'[a2];[2:v]'"$scaler5"'[a3];[3:v]'"$scaler5"'[a4];[4:v]'"$scaler5"'[a5];[5:v]'"$scaler5"'[a6];[a1][a2][a3][a4][a5][a6]xstack=inputs=6:layout=0_0|w0_0|w0+w1_0|0_h0|w0_h0|w0+w1_h0[vi];[vi]pad=1920:1080[v]';;
 		*) minute_output "$pcount $realmin"  "$ffmap";;
@@ -173,3 +174,5 @@ do
 		fi  
 	fi
 done
+
+echo "completed all assigned parts for $day (modified by s and e)"

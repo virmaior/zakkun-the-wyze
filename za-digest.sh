@@ -120,8 +120,8 @@ function decode_minute
 		fi
 	else if [[ $pcount -eq 1 ]] 
 	then
-		echo ffmpeg -hide_banner -loglevel  "$elevel"  $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
-		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
+		echo ffmpeg -hide_banner -loglevel  "$elevel"  $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
+		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
 	else if [[ $pcount -gt 1 ]]
 		echo ям	ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
 		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"

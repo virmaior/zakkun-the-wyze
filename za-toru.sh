@@ -33,6 +33,7 @@ done
 if [ -n "$scp" ] 
 then
 	netmask=192.168.$scp
+	echo "working in $netmask"
 fi
 
 
@@ -105,6 +106,8 @@ else
 	mkdir "$day"
 	cd "$day"
 fi
+
+echo "camera ip is $wyzeip"
 
 function start_wyze_boa
 {

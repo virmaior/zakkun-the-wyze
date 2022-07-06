@@ -276,6 +276,22 @@ height:auto;
 	--bg: rgba(0,200,255, 0.75);
 	--cam:5;
 }
+.cam_6 {
+	--bg: rgba(255,100,190,0.75);
+	--cam:6;
+}
+.cam_7 {
+	--bg: rgba(145,105,75,0.75);
+	--cam:7;
+}
+.cam_8 {
+	--bg: rgba(106,105,75,0.75);
+	--cam:8;
+}
+.cam_9 {
+	--bg: rgba(106,105,252,0.75);
+	--cam:9;
+}
 .output_hour {
      	position: absolute;
     	left: 0;

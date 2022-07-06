@@ -1,4 +1,5 @@
-var za_classes = ['za_single','za_start','za_end','za_nothing'];
+var za_classes = ['za_start','za_end','za_nothing'];
+var za_size = za_classes.length;
 
 function clear_ranges()
 {
@@ -8,9 +9,10 @@ function clear_ranges()
   $('#run_string').html('');
 }
 
+
+
 function ungroup(zgroup)
 {
-			
 	console.log("unstack on " + $(this).attr('zgroup'));
 	$('.zminute_DIV[zgroup=' + zgroup  + ']').css('position','relative').css('margin-top',0).attr('zgm',0);
 
@@ -29,7 +31,6 @@ function faster_look(group_size)
 		$(this).attr('zgroup',group);
 		$(this).attr('zgm',num_in_group + 1);
 		if (num_in_group > 0) {
-			
 			$(this).css('position','absolute');
 			$(this).css('margin-top','-' + (row_height) + 'px');
 		}
@@ -100,10 +101,8 @@ function html_decode_item(my_range)
 		item_label = item_label.replace(/_/g," ");
 		item_text += '<div class="range_label">' + item_label + '</div>'; 
 	}
-        //if (my_range["cam"] ) { item_text += '<div class="range_cam">' + my_cam + '</div>'; }
 	range_width = my_range["e"] - my_range["s"] + 1;
 	return '<div class="html_range cam_' + my_cam + '" start="' + my_range["s"]  + '" style="--start:' + my_range["s"] + ';--rangewidth:' + range_width  +  '">' +  item_text + '</div>';
-//	var pieces =  item_text.split(';');
 	
 }
 
@@ -128,36 +127,6 @@ function cross_reference(my_ranges,my_cam)
 	
 }
 
-/*
-function cr2_line(cam,state,desc,minute)
-{
-  
-   desc =  desc.replace(/_/g," "); 
-   console.log(desc); 
-  return '<div class="sb_bonus_DIV  cam_' + cam + ' ' + state + '" desc="' + desc + '"  >' + minute  + '</div>';
-}
-
-function cross_reference2(my_ranges,my_cam)
-{
-  
-     my_ranges.forEach(
-        function(item,index){
-                var start = item.s;
-                $('.sb_DIV[minute="' + start +  '"]').append(cr2_line(item.cam,'za_start_weak',item.label,item.s));
-                var i = (item.s *1);
-                var last_mid = (item.e * 1) -1;
-                while (i  < last_mid) {
-                        i++;
-                        var i_pretty = String(i).padStart(2, '0');
-                	$('.sb_DIV[minute="' + i_pretty +  '"]').append(cr2_line(item.cam,'za_continue_weak',item.label,i_pretty)); 
-                }
-		if (i < 59) {
-                	var i_pretty =  String(item.e * 1).padStart(2, '0')
-                	$('.sb_DIV[minute="' + i_pretty +  '"]').append(cr2_line( item.cam ,'za_end_weak', item.label , i_pretty));
-  		}
-        });
-
-}*/
 
 function  decode_hour_label(hour_label)
 {
@@ -192,13 +161,11 @@ function show_ranges()
 
 		if (hour.split(';')[0] == this_hour) {
 			cross_reference(all_ranges[hour],cam);
-			/*cross_reference2(all_ranges[hour],cam);*/
 		}
 		console.log(my_string);
 	}
 
-        var day = $(".za_top_DIV").attr('day');
-	
+        var day = $(".za_top_DIV").attr('day');	
 	$('#ranges').html( html_output);
 	generate_select_bar();
 	$('#run_string').html('sudo zsh za-horu.sh d=' + day  + '  i="' + my_string + '"');
@@ -218,14 +185,16 @@ function update_ranges(hour,cam,clean_ranges)
 
 function get_range_name(minute)
 {
-		if ($('.range_label[minute="' + minute +  '"]').length) {
-			//console.log("had range label " +  $('.range_label[minute="' + minute +  '"]').val()) ;
-			var rrange  = $('.range_label[minute="' + minute +  '"]').val();
-			if (rrange != "") { 
-						        return rrange.replace(/ /g,"_"); 
-			}
-		}	
-		return false;	
+	if ($('.range_label INPUT[minute="' + minute +  '"]')) {
+		var rrange  = $('.range_label INPUT[minute="' + minute +  '"]').val();
+		console.log("success on " + rrange);
+		if (rrange != "") { 
+			return rrange.replace(/ /g,"_"); 
+		}
+		return "no name";
+	}
+	console.log("failed on" + '.range_label INPUT[minute="' + minute +  '"]' ); 
+	return false;
 }
 
 function generate_ranges()
@@ -241,9 +210,8 @@ function generate_ranges()
 	    var minute = $(this).attr('minute');
 		if ($(this).hasClass('za_single')) {
 			if (!first_minute) {
-			     var range_name = get_range_name(minute);
-				make_range(ranges,minute,minute,range_name,cam);
-
+			   var range_name = get_range_name(minute);
+			   make_range(ranges,minute,minute,range_name,cam);
 			}
 
 		}
@@ -274,13 +242,6 @@ function generate_ranges()
 	var last_name_range =false;
 	ranges.forEach(
 	function (item,index) {
-		/* obj ={};
-	   	var parts = item.split(';');
-		var i;
-		for (i in parts) {
-			parts[i] = parts[i].split(":");
-			obj[parts[i][0]]=parts[i][1];
-		}*/
 		console.log(item);
 		var current_start = item.s;
 		var current_end = item.e;
@@ -305,37 +266,87 @@ function generate_ranges()
 	show_ranges();
 }
 
+
+function find_before(minute)
+{
+	var search_min =  minute -1;
+	while (search_min >= 0 ) {
+    		var s = search_min.toString().padStart(2,"0");
+		var test = $(".zminute_DIV[minute=" + s + "]");
+		if (test.hasClass('za_start')) { return 'za_start'; }
+		if (test.hasClass('za_end')) { return 'za_end'; }
+		search_min = search_min - 1;
+	}
+	return "za_end";
+}
+
 function toggle_set(el)
 {
-	var current_za_class = -1;
+	var current_za_class = za_size -1;
+	var priorClass = find_before($(el).attr('minute')*1);
+	var default_target = 'za_start';
+
 	za_classes.forEach(
 	function(item,index)
 	{
 	   if ($(el).hasClass(item)) {
-//		console.log("had class " + item); 
 		current_za_class = index; 
-	  	$(el).toggleClass(item)
 	   }			
 	}
 	); 	
-	
 
-	var newClass= za_classes[(current_za_class+1)%za_classes.length];
-//	console.log("set to " +  newClass);
-	$(el).toggleClass(newClass); 
+	var oldClass 	= za_classes[current_za_class];
+	var newClass	= za_classes[(current_za_class+1)%za_size];
+	if (newClass == priorClass) {
+		newClass = za_classes[(current_za_class+2)%za_size];
+	}
+
+	force_set(el,newClass); 
+}
+
+function force_set(el,my_class)
+{
+        $(el).removeClass(za_classes.join(' '));
+        $(el).toggleClass(my_class); 
+}
+
+function shifter(e)
+{
+        e.preventDefault();
+       var shifter = $(this).text();
+	var source = $(this).parent().find('INPUT').attr('minute') * 1;
+               switch (shifter)
+               {
+                             case "Up":var dest = source - 1; break;
+                             case "Down":var dest = source +1; break;
+               }
+                      
+	dest = dest.toString().padStart(2,"0");
+	source = source.toString().padStart(2,"0");
+
+	console.log('start with ' + source + ' dest  ' + dest);
+	var srow = $('.zminute_DIV[minute=' +  source + ']');
+	var drow = $('.zminute_DIV[minute=' + dest + ']');
+	srow.find('.range_label INPUT').attr('minute',dest);
+	srow.find('.range_label').appendTo(drow.find('.zm_marker'));
+	drow.attr('class',srow.attr('class'));
+	srow.remove('.range_label');
+	srow.removeClass('za_start'); 
+
+	force_set( $('.sb_DIV[minute=' + source + ']'),'za_nothing');
+	force_set( $('.sb_DIV[minute=' + dest + ']'),'za_start');
 }
 
 
 function toggle_state(minute)
 {
-	
 		console.log("called toggle 3 on " + minute);
 		var mxt = $('.zminute_DIV[minute=' + minute + ']');
-		var mx = $('.sb_DIV[minute=' + minute + ']');
+		toggle_set( $('.sb_DIV[minute=' + minute + ']'));
 		toggle_set(mxt);
-		toggle_set(mx);
 		if (mxt.hasClass('za_start')) {
-			mxt.find('.zm_marker').append('<input minute="' + minute + '" class="range_label" value="" /> ');
+			mxt.find('.zm_marker').append('<div class="range_label"><input class="rl_name"  minute="' + minute + '" value="" /><button class="shifter">Up</button><button class="shifter">Down</button>');
+			mxt.find('.shifter').on('click',shifter);
 		} else {
 			mxt.find('.zm_marker .range_label').remove();		
 		}
@@ -352,7 +363,6 @@ function generate_select_bar()
         $(".zminute_DIV").each(function(){
                 var minute = $(this).attr('minute');
 		var match_classes = ' ' + $(this)[0].className.replace('zminute_DIV','');
-            //    $(this).find('.zm_marker:first').append('<div class="other_cams" minute="' + minute  + '"></div>');
                 $("#select_bar").append('<div class="sb_DIV' + match_classes  + '" id="sb_' + minute + '" minute="' + minute + '" style="--minute:' + minute +  '"><a class="MIN_jumper">' + minute + '</a></div>');
         });
         $(".MIN_jumper").on('click',function(e){
@@ -361,7 +371,6 @@ function generate_select_bar()
                         scrollTop: $('.zminute_DIV[minute="' +  $(this).text()  + '"]').offset().top
                 }, 100);
         });
-        //$(".zminute_DIV").addClass('za_nothing');
         $(".za_minute").addClass('za_nothing');
         $(".za_DIV").off('click').on('click',
         function(){

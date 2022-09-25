@@ -1,12 +1,61 @@
 var za_classes = ['za_start','za_end','za_nothing'];
 var za_size = za_classes.length;
 
-function clear_ranges()
+
+const miru_tool = 
 {
-  localStorage.setItem("zaday",JSON.stringify({}));
-  $('#ranges').html('<div id="select_bar"></div>');
-  generate_select_bar();
-  $('#run_string').html('');
+	day:false, 
+	cam: false,
+	hour:false,
+	init:function()
+	{
+	        this.day = $(".za_top_DIV").attr('day');
+	        this.cam = $(".za_top_DIV").attr('cam');
+        	this.hour = $(".za_top_DIV").attr('hour');
+        	$(".za_top_DIV").addClass("cam_" + this.cam); 
+		if (document.getElementsByClassName("clear1").length == 0) {
+			$(".range_tools").append('<div class="clear1" onclick="miru_tool.clear1()" >Clear 1</div>');
+			$(".clearer").off('click').on('click',this.clear_all);
+		}		
+	},
+	load:function()
+	{
+			
+		var x=   localStorage.getItem("zaday");
+		console.log("loaded " + x);
+		if (x) {  x = JSON.parse(x); }
+		return x;
+	},
+	update_ranges:function(clean_ranges)
+	{
+        	var all_ranges = miru_tool.load();
+        	if (!all_ranges)  { all_ranges = {} }
+        	all_ranges["h:" + miru_tool.hour + ";c:" +  miru_tool.cam ] = clean_ranges;
+        	console.log(all_ranges);
+        	miru_tool.store(all_ranges);
+	},
+	store: function(value)
+	{
+		console.log(" saved " + value);
+	        localStorage.setItem('zaday',JSON.stringify(value));
+	},
+	clear1:function()
+	{
+		var all_ranges = this.load();
+        	if (!all_ranges) {  	return false; }
+		delete all_ranges["h:" + this.hour + ";c:" + this.cam];
+		this.store(all_ranges);
+		$(".zminute_DIV").removeClass('za_start , za_end');
+		$(".range_label").remove();
+		show_ranges();
+	},
+	clear_all:function()
+	{
+		miru_tool.store({});
+		$('#ranges').html('<div id="select_bar"></div>');
+		  generate_select_bar();
+  		$('#run_string').html('');
+	}
 }
 
 
@@ -106,9 +155,9 @@ function html_decode_item(my_range)
 	
 }
 
+
 function cross_reference(my_ranges,my_cam)
 {
-	console.log("entered cross reference");
       	my_ranges.forEach(
         function(item,index){
                 var start = item.s;
@@ -138,50 +187,53 @@ function  decode_hour_label(hour_label)
 }
 
 
+function self_reference(my_ranges)
+{
+      my_ranges.forEach(
+        function(item,index){
+                var item_label_pretty = item.label.replace(/_/g," ");
+                var i = (item.s *1);
+		var i_pretty =  String(item.s * 1).padStart(2, '0')
+		$(".zminute_DIV[minute=" + i_pretty + "]").addClass('za_start');
+		range_start_html(i_pretty,item_label_pretty);	
+                i_pretty =  String(item.e * 1).padStart(2, '0');
+                $(".zminute_DIV[minute=" + i_pretty + "]").addClass('za_end');
+        });
+}
+
 function show_ranges()
 {
-	var zaday = localStorage.getItem("zaday");
-	if (!zaday) {
-		var  all_ranges  = [];
-	} else {
-	var all_ranges =  JSON.parse(zaday);
-	}
+	var all_ranges = miru_tool.load();
+	if (!all_ranges) {  all_ranges  = []; }
 	console.log(all_ranges);
 	var my_string = "";
-  	var cam = $(".za_top_DIV").attr('cam');
-	var this_hour = "h:" + $(".za_top_DIV").attr('hour');
+  	var cam = miru_tool.cam; 
+	var this_hour = "h:" + miru_tool.hour;
 	var html_output = "";
 
         $('.other_cams').empty();
-
 	for(var hour in all_ranges)
 	{
 		my_string +=  hour + '>' +   zsh_decode(all_ranges[hour]) + "V\n";
 		html_output += '<div class="output_row">' + decode_hour_label(hour)  +  html_decode(all_ranges[hour]) + '</div>';
-
-		if (hour.split(';')[0] == this_hour) {
-			cross_reference(all_ranges[hour],cam);
+		var parts = hour.split(';');
+		if (parts[0] == this_hour) {
+			if (parts[1] == ("c:" + cam)) {
+				self_reference(all_ranges[hour]);
+			}
+			else {
+				cross_reference(all_ranges[hour],cam);
+			}
 		}
 		console.log(my_string);
 	}
-
-        var day = $(".za_top_DIV").attr('day');	
+        var day = miru_tool.day;
 	$('#ranges').html( html_output);
 	generate_select_bar();
 	$('#run_string').html('sudo zsh za-horu.sh d=' + day  + '  i="' + my_string + '"');
 	
 }
 
-function update_ranges(hour,cam,clean_ranges)
-{
-	var zaday = localStorage.getItem("zaday");
-	if (zaday) {
-	var all_ranges =  JSON.parse(zaday);
-	} else { all_ranges = {} }
-	all_ranges["h:" + hour + ";c:" +  cam ] = clean_ranges;
-	localStorage.setItem('zaday',JSON.stringify(all_ranges));
-
-}
 
 function get_range_name(minute)
 {
@@ -205,7 +257,7 @@ function generate_ranges()
 	var tight_interval = 1;
 	var range_name = false;
 
-        var cam = $(".za_top_DIV").attr('cam');
+        var cam = miru_tool.cam;
 	$('.zminute_DIV').each(function(){
 	    var minute = $(this).attr('minute');
 		if ($(this).hasClass('za_single')) {
@@ -215,9 +267,7 @@ function generate_ranges()
 			}
 
 		}
-		if ($(this).hasClass('za_start')) {
-			first_minute = minute;
-		}
+		if ($(this).hasClass('za_start')) { first_minute = minute; }
 		if ($(this).hasClass('za_end')) {
 			var range_name = get_range_name(first_minute);
 			make_range(ranges,first_minute,minute,range_name,cam);
@@ -235,7 +285,7 @@ function generate_ranges()
 	 }
 
 	console.log("tidying ranges");	
-	var hour = $(".za_top_DIV").attr('hour');
+	var hour = miru_tool.hour;
 	var clean_ranges = [];
 	var last_start = false;
 	var last_end = false;
@@ -262,7 +312,7 @@ function generate_ranges()
 		make_range(clean_ranges,last_start,last_end,last_range_name,cam);
 	}
 	console.log(clean_ranges);
-	update_ranges(hour,cam,clean_ranges);
+	miru_tool.update_ranges(clean_ranges);
 	show_ranges();
 }
 
@@ -338,19 +388,26 @@ function shifter(e)
 }
 
 
+function range_start_html(minute,value)
+{
+        var mxt = $('.zminute_DIV[minute=' + minute + ']');
+        mxt.find('.zm_marker').append('<div class="range_label"><input class="rl_name"  minute="' + minute + '" value="' + value + '" /><button class="shifter">Up</button><button class="shifter">Down</button>');
+        mxt.find('.shifter').on('click',shifter);
+
+}
+
+
 function toggle_state(minute)
 {
-		console.log("called toggle 3 on " + minute);
-		var mxt = $('.zminute_DIV[minute=' + minute + ']');
-		toggle_set( $('.sb_DIV[minute=' + minute + ']'));
-		toggle_set(mxt);
-		if (mxt.hasClass('za_start')) {
-			mxt.find('.zm_marker').append('<div class="range_label"><input class="rl_name"  minute="' + minute + '" value="" /><button class="shifter">Up</button><button class="shifter">Down</button>');
-			mxt.find('.shifter').on('click',shifter);
-		} else {
-			mxt.find('.zm_marker .range_label').remove();		
-		}
-		
+	console.log("called toggle 3 on " + minute);
+	var mxt = $('.zminute_DIV[minute=' + minute + ']');
+	toggle_set( $('.sb_DIV[minute=' + minute + ']'));
+	toggle_set(mxt);
+	if (mxt.hasClass('za_start')) {
+		range_start_html(minute,'');
+	} else {
+		mxt.find('.zm_marker .range_label').remove();
+	}
 }
 
 
@@ -380,27 +437,21 @@ function generate_select_bar()
 }
 
 $(document).ready(function() {
-	$(".za_top_DIV").addClass("cam_" + $(".za_top_DIV").attr('cam'));	
-
+	miru_tool.init();
     $(".zminute_DIV").each(function(){
                 var minute = $(this).attr('minute');
                 $(this).find('.zm_marker:first').append('<div class="other_cams" minute="' + minute  + '"></div>');
        });
 
 
-	//generate_select_bar();
 	$(".dim_input").on('change',function() {
-
 		document.documentElement.style.setProperty('--ss_top',$('#top').val() );
 		document.documentElement.style.setProperty('--ss_left',$('#left').val() );
 		document.documentElement.style.setProperty('--ss_right',$('#right').val() );
 		document.documentElement.style.setProperty('--ss_bottom',$('#bottom').val());
-	
 		console.log('dimensions: top:' + $('#top').val() + ' l:' + $('#left').val() + ' r:'  + $('#right').val() + ' b:' +  $('#bottom').val() );
 	});
 
-
-			
 	show_ranges();
 
 	$(document).find(".za_img:first").one('load',function(e){

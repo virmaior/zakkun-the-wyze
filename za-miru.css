@@ -13,6 +13,7 @@ BODY {
  --minute_width:1.6%;  
  --start_color:#0fa30f;
  --end_color:#b9220a;
+ --bar_width:99%;
 }
 
 
@@ -58,7 +59,7 @@ height:auto;
  top:0;
  border-top:2px solid blue;
  background-color:#ddd;
- width:99%;
+ width:var(--bar_width);
  z-index:20;
 }
 
@@ -204,13 +205,13 @@ height:auto;
 .range_tools {
  display:flex;
 }
-.generator , .clearer {
+.generator , .clearer , .clear1 {
  color:white;
  font-weight:bold;
  font-size:20px;
  text-align:center;
  border-radius:3px;
- width:50%;
+ width:33%;
 }
 .generator {
  border:2px solid green;
@@ -220,6 +221,10 @@ height:auto;
 .clearer {
  border:2px solid red;
  background-color:crimson;
+}
+.clear1 {
+ border: 2px solid #0016ff;
+ background-color: #ba4fff;
 }
 
 #ranges {
@@ -234,6 +239,7 @@ height:auto;
  bottom:0;
  max-height:45px;
  z-index:200;
+ transition: 1.0s;
 }
 #ranges:hover {
  height:auto;
@@ -248,6 +254,7 @@ height:auto;
 
 .output_row {
  height:10px;
+ width:var(--bar_width);
 }
 
 #ranges:hover .output_row {

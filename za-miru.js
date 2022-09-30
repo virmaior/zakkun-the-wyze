@@ -47,7 +47,7 @@ const miru_tool =
 		this.store(all_ranges);
 		$(".zminute_DIV").removeClass('za_start , za_end');
 		$(".range_label").remove();
-		show_ranges();
+		miru_tool.show();
 	},
 	clear_all:function()
 	{
@@ -55,6 +55,39 @@ const miru_tool =
 		$('#ranges').html('<div id="select_bar"></div>');
 		  generate_select_bar();
   		$('#run_string').html('');
+	},
+	show:function()
+	{
+
+        var all_ranges = miru_tool.load();
+        if (!all_ranges) {  all_ranges  = []; }
+        console.log(all_ranges);
+        var my_string = "";
+        var cam = miru_tool.cam; 
+        var this_hour = "h:" + miru_tool.hour;
+        var html_output = "";
+
+        $('.other_cams').empty();
+        for(var hour in all_ranges)
+        {
+                my_string +=  hour + '>' +   zsh_decode(all_ranges[hour]) + "V\n";
+                html_output += '<div class="output_row">' + decode_hour_label(hour)  +  html_decode(all_ranges[hour]) + '</div>';
+                var parts = hour.split(';');
+                if (parts[0] == this_hour) {
+                        if (parts[1] == ("c:" + cam)) {
+                                self_reference(all_ranges[hour]);
+                        }
+                        else {
+                                cross_reference(all_ranges[hour],cam);
+                        }
+                }
+                console.log(my_string);
+        }
+        var day = miru_tool.day;
+        $('#ranges').html( html_output);
+        generate_select_bar();
+        $('#run_string').html('sudo zsh za-horu.sh d=' + day  + '  i="' + my_string + '"');
+
 	}
 }
 
@@ -194,45 +227,17 @@ function self_reference(my_ranges)
                 var item_label_pretty = item.label.replace(/_/g," ");
                 var i = (item.s *1);
 		var i_pretty =  String(item.s * 1).padStart(2, '0')
+		$(".zminute_DIV[minute=" + i_pretty + "] .zm_marker .range_label").remove();
 		$(".zminute_DIV[minute=" + i_pretty + "]").addClass('za_start');
-		range_start_html(i_pretty,item_label_pretty);	
-                i_pretty =  String(item.e * 1).padStart(2, '0');
+		range_start_html(i_pretty,item_label_pretty);
+
+	        i_pretty =  String(item.e * 1).padStart(2, '0');
                 $(".zminute_DIV[minute=" + i_pretty + "]").addClass('za_end');
+                $(".zminute_DIV[minute=" + i_pretty + "] .zm_marker .range_label").remove();
+		range_end_html(i_pretty);
         });
 }
 
-function show_ranges()
-{
-	var all_ranges = miru_tool.load();
-	if (!all_ranges) {  all_ranges  = []; }
-	console.log(all_ranges);
-	var my_string = "";
-  	var cam = miru_tool.cam; 
-	var this_hour = "h:" + miru_tool.hour;
-	var html_output = "";
-
-        $('.other_cams').empty();
-	for(var hour in all_ranges)
-	{
-		my_string +=  hour + '>' +   zsh_decode(all_ranges[hour]) + "V\n";
-		html_output += '<div class="output_row">' + decode_hour_label(hour)  +  html_decode(all_ranges[hour]) + '</div>';
-		var parts = hour.split(';');
-		if (parts[0] == this_hour) {
-			if (parts[1] == ("c:" + cam)) {
-				self_reference(all_ranges[hour]);
-			}
-			else {
-				cross_reference(all_ranges[hour],cam);
-			}
-		}
-		console.log(my_string);
-	}
-        var day = miru_tool.day;
-	$('#ranges').html( html_output);
-	generate_select_bar();
-	$('#run_string').html('sudo zsh za-horu.sh d=' + day  + '  i="' + my_string + '"');
-	
-}
 
 
 function get_range_name(minute)
@@ -313,7 +318,7 @@ function generate_ranges()
 	}
 	console.log(clean_ranges);
 	miru_tool.update_ranges(clean_ranges);
-	show_ranges();
+	miru_tool.show();
 }
 
 
@@ -346,6 +351,7 @@ function toggle_set(el)
 	); 	
 
 	var oldClass 	= za_classes[current_za_class];
+	if (oldClass == "za_start") { el.attr('range_label',el.find('.rl_name').val());  }
 	var newClass	= za_classes[(current_za_class+1)%za_size];
 	if (newClass == priorClass) {
 		newClass = za_classes[(current_za_class+2)%za_size];
@@ -363,28 +369,27 @@ function force_set(el,my_class)
 function shifter(e)
 {
         e.preventDefault();
-       var shifter = $(this).text();
-	var source = $(this).parent().find('INPUT').attr('minute') * 1;
-               switch (shifter)
-               {
-                             case "Up":var dest = source - 1; break;
-                             case "Down":var dest = source +1; break;
-               }
-                      
-	dest = dest.toString().padStart(2,"0");
-	source = source.toString().padStart(2,"0");
-
-	console.log('start with ' + source + ' dest  ' + dest);
+	var shifter = $(this).text();
+	var source = $(this).closest('.zminute_DIV').attr('minute') * 1;
+	switch (shifter)
+	{
+             case "Up":var dest = source - 1; break;
+             case "Down":var dest = source +1; break;
+	}                      
+	var dest = dest.toString().padStart(2,"0");
+	var source = source.toString().padStart(2,"0");
 	var srow = $('.zminute_DIV[minute=' +  source + ']');
 	var drow = $('.zminute_DIV[minute=' + dest + ']');
+   	var state = srow.attr('class').split(' ')[1];
+        console.log('start with ' + source + ' dest  ' + dest + "and state " + state);
 	srow.find('.range_label INPUT').attr('minute',dest);
 	srow.find('.range_label').appendTo(drow.find('.zm_marker'));
+	srow.attr('range_label','');
 	drow.attr('class',srow.attr('class'));
-	srow.remove('.range_label');
-	srow.removeClass('za_start'); 
+	srow.remove('.range_label').removeClass(state); 
 
 	force_set( $('.sb_DIV[minute=' + source + ']'),'za_nothing');
-	force_set( $('.sb_DIV[minute=' + dest + ']'),'za_start');
+	force_set( $('.sb_DIV[minute=' + dest + ']'),state);
 }
 
 
@@ -396,6 +401,13 @@ function range_start_html(minute,value)
 
 }
 
+function range_end_html(minute)
+{
+        var mxt = $('.zminute_DIV[minute=' + minute + ']');
+        mxt.find('.zm_marker').append('<div class="range_label"><button class="shifter">Up</button><button class="shifter">Down</button><div>');
+        mxt.find('.shifter').on('click',shifter);
+}
+
 
 function toggle_state(minute)
 {
@@ -403,10 +415,14 @@ function toggle_state(minute)
 	var mxt = $('.zminute_DIV[minute=' + minute + ']');
 	toggle_set( $('.sb_DIV[minute=' + minute + ']'));
 	toggle_set(mxt);
+        mxt.find('.zm_marker .range_label').remove();
+
 	if (mxt.hasClass('za_start')) {
-		range_start_html(minute,'');
-	} else {
-		mxt.find('.zm_marker .range_label').remove();
+		var value = "";
+		if (mxt.attr('range_label') !== undefined) { value = mxt.attr('range_label'); }
+		range_start_html(minute,value);
+	} else if (mxt.hasClass('za_end'))  {
+		range_end_html(minute);
 	}
 }
 
@@ -452,7 +468,7 @@ $(document).ready(function() {
 		console.log('dimensions: top:' + $('#top').val() + ' l:' + $('#left').val() + ' r:'  + $('#right').val() + ' b:' +  $('#bottom').val() );
 	});
 
-	show_ranges();
+	miru_tool.show();
 
 	$(document).find(".za_img:first").one('load',function(e){
 		var row_height = Math.floor($(".za_img[minute=00][screen=001]").height() + 1);

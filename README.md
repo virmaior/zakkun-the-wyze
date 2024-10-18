@@ -2,7 +2,7 @@
 
 This project has scripts that I've been using to automate video archiving on my wyze v3 camera. 
 
-My wife and I bought a Wyze v3 to figure out what our flying squirrel (Zaccheus) is doing at night and just to keep records of him. The starlight sensor and night vision combined are some awesome features, but the ability to playback video in the application is limited. Moreover, without subscribing, you're limited to rather short clips.
+My wife and I bought a Wyze v3 to figure out what our flying squirrel (Zaccheus) is doing at night and just to keep records of him. The starlight sensor and night vision combined are some awesome features, but the ability to playback video in the application is dismal. Moreover, without subscribing, you're limited to rather short clips. (I haven't used the app in years because I look at the JPEG feeds on page).
 
 # Project Goal
 
@@ -48,21 +48,6 @@ for za-miru.sh
 2. skipcap = skip doing the screen captures
 3. skiphtml = skip making html pages to show the screen captures
 
-for za-horu.sh
-1. sudo zsh za-horu.sh d=20210724 i="h:23;c:1>s:00;e:06;l:feeding;c:1,s:18;e:29;l:hammock_left;c:1,s:47;e:59;l:hammock_left;c:1V h:23;c:3>s:00;e:06;l:feeding;c:3,s:18;e:29;l:hammock_left;c:3,s:47;e:59;l:hammock_left;c:3V h:23;c:4>s:00;e:06;l:feeding;c:4,s:19;e:29;l:hammock_left;c:4,s:48;e:59;l:hammock_left;c:4V "
-2. d=20210715 - specify the date (not required)
-
-the input parameter internally splits into two based on >
-
-First part:
-1. h = hour
-2. c = camera
-
-Second part:
-1. s=start minute
-2. e=end minute
-3. l=label
-4. c=camera
 
 # Video Identification and Screenshot Browser (za-miru.sh)
 
@@ -77,13 +62,57 @@ Different attempts (za-cap9.sh ):
 7. integrated functionality into za-miru.sh (no more separate za-cap9.sh)
 
 
-za-horu.sh now takes the output from the HTML page selections and use that to make the aggregate clips.
+# Aggregating / Saving the Videos
+for za-horu.sh
+1. sudo zsh za-horu.sh  i="h:00;c:3>d:20241011;h:00;c:3;s:00;e:00;l:emk_lava,d:20241011;h:00;c:3;s:02;e:03;l:emk_lava_branch,d:20241011;h:00;c:3;s:08;e:08;l:emk_lava,d:20241011;h:00;c:3;s:14;e:14;l:emk_topshelf_ladder,d:20241011;h:00;c:3;s:16;e:17;l:emk_lava,d:20241011;h:00;c:3;s:19;e:19;l:emk_ladder,d:20241011;h:00;c:3;s:21;e:21;l:emk_what,d:20241011;h:00;c:3;s:23;e:26;l:emk_topshelf,d:20241011;h:00;c:3;s:47;e:48;l:emk_ladderVh:00;c:5>d:20241011;h:00;c:5;s:00;e:14;l:emk_pouch,d:20241011;h:00;c:5;s:16;e:16;l:emk_ledge,d:20241011;h:00;c:5;s:18;e:21;l:emk_pouch,d:20241011;h:00;c:5;s:28;e:30;l:emk_pouch_ledge,d:20241011;h:00;c:5;s:34;e:37;l:emk_pouch,d:20241011;h:00;c:5;s:45;e:53;l:emk_pouch_hammock,d:20241011;h:00;c:5;s:59;e:59;l:emk_pouchVh:00;c:7>d:20241011;h:00;c:7;s:02;e:03;l:emk_garigari,d:20241011;h:00;c:7;s:05;e:06;l:emk_topdowel,d:20241011;h:00;c:7;s:14;e:16;l:emk_what,d:20241011;h:00;c:7;s:18;e:20;l:emk_wall,d:20241011;h:00;c:7;s:22;e:31;l:emk_ladder_wallV"
+
+
+(in prior code a separate d= option was used on the main line). This has been switched to using it INSIDE of the entries -- allowing spanning of multiple days.
+
+the input parameter internally splits into two based on >
+
+First part:
+1. h = hour
+2. c = camera
+
+Second part:
+1. d=date
+2. h=hour
+3. s=start minute
+4. e=end minute
+5. l=label
+6. c=camera
+
+
+za-horu.sh takes the output from the HTML page selections and use that to make the aggregate clips.
+
+It is now colorized and shows a bit of feedback.
+
+# cgi-bin/za-horu.cgi
+
+This can create a file in `/var/www/html/tmp` that ends in .tmp and contains the data from za-miru.sh
+
+# za-harau.sh
+
+This will take all of the `/var/www/html/tmp` files and run them through za-horu.sh . After it runs a file, it will change the extension to .done
+
+# za-status.sh and /cgi-bin/za-status.cgi
+
+This will provide information about how many days still need to be processed, digested, etc. (this is colorized in both HTML and command line).
+
+# test-cams.sh
+
+Wyze cameras often lose the date/time and configs or reboot . This checks to make sure all the cameras think it is the same time and are recording (requires functionality in wz_mini_hacks)
+
+# Cgi-bin and Debian / Raspbian 
+
+The default directory is not able to run cgi-bin code in these distributions. Instead, the cgi-bin files need to go to `/usr/lib/cgi-bin`
+
 
 # Future Project
 
-Another idea would be to compare the images from the screenshots and use that to speed up the process. Assume that change beneath a threshold is noise and only show items with higher change. But at least for our videos, I haven't seen a good tool that can detect Zaccheus very well.
-
-
+Another idea would be to compare the images from the screenshots and use that to speed up the process. Assume that change beneath a threshold is noise and only show items with higher change. But at least for our videos, I haven't seen a good tool that can detect Zaccheus very well. (I still don't have a good method for rapidly comparing the screenshots -- I guess the most basic idea would be (a) reduce color palette , (b) reduce image size, look for differences that way, (c) have a threshold).
+ 
 
 # General Limitations
 

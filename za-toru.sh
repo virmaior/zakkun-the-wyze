@@ -1,10 +1,8 @@
 #!/bin/zsh
-typeset -i COUNTER=0
-cwd=$(pwd)
-uname=root
-pword=WYom2020
-netmask=192.168.4
+. /var/www/html/za-common.sh
 
+
+typeset -i COUNTER=0
 typeset -Z 2 -i minhour=00
 typeset -Z 2 -i maxhour=23
 
@@ -30,31 +28,14 @@ do
 
 done
 
+
+
 if [ -n "$scp" ] 
 then
 	netmask=192.168.$scp
 	echo "working in $netmask"
 fi
 
-
-
-myos=$(uname)
-
-function datediff
-{
- if [[ "$myos" == "Darwin" ]]
- then
-	echo $(date $1 +$2)
- else
-	if [[ "$1" == "-v-1H" ]]; then
-		echo $(date --date="1 hour ago" \+"$2")
-	elif [[ "$1" == "-v-1d" ]]; then
-		echo $(date --date="yesterday" \+"$2")
-	else
-		exit -1
-	fi
- fi 
-}
 
 
 if [ -n "$cron" ]
@@ -88,19 +69,7 @@ then
 	echo "running on camera $cam"
 	mkdir "$day-$cam"
 	cd "$day-$cam"
-	if [ "$cam" = "2" ]
-	then
-		wyzeip=$netmask.102
-	elif [ "$cam" = "3" ]
-	then
-		wyzeip=$netmask.103
-	elif [ "$cam" = "4" ]
-	then
-		wyzeip=$netmask.104
-	elif [ "$cam" = "5" ]
-	then
-		wyzeip=$netmask.105
-	fi
+	wyzeip=$netmask.10$cam
 else
 	wyzeip=$netmask.101
 	mkdir "$day"
@@ -118,22 +87,13 @@ function start_wyze_boa
 function hour_toru
 {
 	typeset -Z 2 -i hourp=$1
-	typeset -Z 2 -i minp
 
 	echo "hour : " $hourp
 
-	mkdir $hourp
+	[[ -d $hourp ]] || mkdir $hourp
 
   	cd $hourp
 	curl -O  http://$wyzeip"/SDPath/record/"$day/$hourp"/[00-59].mp4" 
-	#for ((i = 00; i <= 59; i++)) 
-	#do
-	#	minp=$i
-	#	url=$day/$hourp/$minp.mp4
-	#	fullurl=$wyzeip/SDPath/record/$url
-	#	echo $fullurl
-  	#	curl -O $fullurl 
-	#done
 	cd ..
 }
 
@@ -141,7 +101,7 @@ function hour_toru2
 {
         typeset -Z 2 -i hourp=$1
         echo "hour: " $hourp
-        mkdir $hourp
+        [[ -d $hourp ]] || mkdir $hourp
         cd $hourp
 	#echo "root@"$wyzeip"/media/mmc/record/"$day/$hourp"/*.mp4"
         scp -r  "root@"$wyzeip":/media/mmc/record/"$day/$hourp"/*.mp4"  "."
@@ -154,7 +114,6 @@ function hour_toru2
 if [ -z "$skip"]
 then
 
-typeset -Z 2 -i hourp=0
 typeset -Z 2 -i minp
 
 for ((hour =$minhour; hour <= $maxhour; hour++)) 
@@ -170,6 +129,7 @@ fi
 
 cd ..
 
+
 if [ -n "$miru" ] 
 then
 	echo "running miru"
@@ -179,5 +139,3 @@ then
 	fi
 	zsh za-miru.sh d=$day s=$minhour e=$maxhour $camstring
 fi
-
-

@@ -1,11 +1,10 @@
 #!/bin/zsh
 typeset -Z 2 -i COUNTER=0
+. /var/www/html/za-common.sh
 cd /var/www/html
-cwd=$(pwd)
 typeset -Z 2 minute=0
 typeset -i seconds=00
 typeset -i capcount=3
-
 
 for ARGUMENT in "$@"
 do
@@ -92,13 +91,20 @@ for i in *.mp4
 
 	#overwrite $ffmap
 
-	ffmpeg -hide_banner -loglevel error $(echo $ffmap) 
+	$ffmpeg -hide_banner -loglevel error $(echo $ffmap) 
 done
 	echo " done $1 "
 	cd $cwd
 
 
 }
+
+function write_zminute
+{
+	printf  '<div class="zminute_DIV" minute="'%02d'"><div class="zm_marker"><a href="%02d/%02d.mp4">%02d</a></div>' $2 $1 $2 $2   >> $target
+	
+}
+
 
 function folder_miru
 {
@@ -113,11 +119,12 @@ fi
 	hour=${FILE:0-3:2}
 	typeset -i -Z 2 cminute=00
 
-	target=$tgtd/screens$hour.html
+#	target=$tgtd/screens$hour.html
 	echo $target
 	cp za-miru-top.html  $target
 	echo '<div class="za_top_DIV" day="'$day'"  hour="'$hour'" cam="'$cam'"><div class="za_day">'$day '</div><div class="za_hour">'$hour '</div><div class="za_cam">'$cam'</div></div>' >> $target	
-	echo '<div class="zminute_DIV" minute="00"><div class="zm_marker">00</div>' >> $target
+	#echo '<div class="zminute_DIV" minute="00"><div class="zm_marker"><a href="'$hour"/"$minute.mp4'">00</a></div>' >> $target
+	write_zminute $hour 00
 	cd "$fFILE"
 	for i in screen*.jpg
 	do
@@ -127,7 +134,8 @@ fi
 		then
 			echo '</div>' >> $target
 
-			echo '<div class="zminute_DIV" minute="'$minute'"><div class="zm_marker"><div class="mm_DIV">'$minute'</div></div>' >> $target
+#			echo '<div class="zminute_DIV" minute="'$minute'"><div class="zm_marker"><div class="mm_DIV"><a href="'$hour"/"$minute.mp4'" target="_'$day$hour$minute'">'$minute'</a></div></div>' >> $target
+			write_zminute  $hour $minute
 			cminute=$minute
 		
 		fi
@@ -146,26 +154,18 @@ fi
 for FILE in $tgtd/*/
 do
 
-	echo "$COUNTER == $FILE "
 	hour=${FILE:0-3:2}
- 	if [ -n "$s_hour" ] 
-	then
-		if [ "$hour" -ge "$s_hour" ] 
-		then
-			echo "in range"
-			if [ "$hour" -le "$e_hour" ] 
-			then
-				folder_tsukamu "$FILE"
-				folder_miru "$FILE"
-			else 
-			echo "past range"
-			fi
+ 	if [ -n "$s_hour" ] ; then
+	        if [ "$hour" -ge "$s_hour" ] && [ "$hour" -le "$e_hour" ]; then
+			echo "processing $hour"
+			folder_tsukamu "$FILE"
+		        target="$tgtd/screens$hour.html"
+			folder_miru "$FILE"
 		fi
 	else
-
-		folder_tsukamu $FILE
-		folder_miru $FILE
+		folder_tsukamu "$FILE"
+		folder_miru "$FILE"
 	fi
 
-	let COUNTER++
+	(( COUNTER++ ))
 done

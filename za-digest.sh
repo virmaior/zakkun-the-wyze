@@ -1,6 +1,7 @@
 #!/bin/zsh
+. /var/www/html/za-common.sh
+
 typeset -i COUNTER=0
-cwd=$(pwd)
 
 
 typeset -i vidlength
@@ -15,6 +16,8 @@ scaler2='scale=iw/2:ih/2'
 scaler5='scale=640x360'
 scalerb='scale=960x540'
 
+
+
 for ARGUMENT in "$@"
 do
     AKEY=$(echo $ARGUMENT | cut -f1 -d=)
@@ -24,6 +27,9 @@ do
  	s)	smin=${VALUE} ;;
 	e)	emin=${VALUE} ;;
 	prun)	prun=${VALUE};; 
+	next)	next=${VALUE};;
+	clear) clear=${VALUE};;
+	list)   list=${VALUE};;;
         *)	echo "unknown paramater"${AKEY};;
    esac
 done
@@ -33,15 +39,58 @@ then
 	echo "running with prun $prun"
 fi
 
+if [ -n "$clear" ]
+then
+	clear_live "za-digest-live"
+fi
+
+if [ -n "$next" ]
+then
+	lfile=$(ls digests/digest-*.mp4 -1r | head -1)
+	cday=${lfile[16,23]}
+	tday=$(date +'%Y%m%d' -d''"$cday + 1day "'')
+        echo "Ran with next day mode (last date: $cday #  new day = $tday #"
+	
+	#$(date +'%Y%m%d' -d'2022-01-31 + 1day' )
+	if [ -d "clips/$tday" ] ;
+	then	
+		day="$tday"	
+	else
+		echo "next day not found ($tday)"
+		nday=$(date +'%Y%m%d' -d''"$cday + 2day "'')
+	        if [ -d "digests/$tday" ] ; then
+			echo "next next day does exist"
+		fi
+		exit
+	fi
+	echo "Next mode set date to $day via next mode "
+fi
 
 
 if [ -n "$day" ]
 then
 	echo "Ran with parameter d=$day "
 else
-	echo "no parameter given - you need to set a date using d="  
+	
+	echo '\e[0;31m' "no parameter given - you need to set a date using d="  
     	exit 
 fi
+
+
+running=$(check_live "za-digest-live")
+if [[ "$running" -gt "0" ]]; then
+        echo  '\e[0;31m' "digest in progress or file remains "
+        tail nohup.out
+        echo "-----"
+        echo "Date: $running"
+        echo "-----"
+        echo "clear with clear=y"
+        exit
+fi
+
+set_live "za-digest-live" "$day"
+
+
 
 function decode_part
 {
@@ -103,13 +152,12 @@ function decode_minute
 
 
 	IFS=" ";
-	outfile="clips/digest-$day-$realmin"
+	outfile="digests/digest-$day-$realmin"
 	echo "producing $outfile with $pcount inputs"
 	accel="h264_v4l2m2m"
-	#accel="h264_omx"
 	elevel="error"
 	#elevel="debug"
-	brate="2500k"
+	brate="3000k"
 	if (( ${+prun} ))
 	then 
 		if [[ $pcount -eq "$prun" ]]
@@ -148,7 +196,9 @@ do
    let "vstart= (hour * 60) + minute "
   echo "h:" $hour "m:" $minute "cam:" $cam
   vidlength=$(ffprobe -i $FILE -show_entries format=duration -v quiet -of csv="p=0") 
-	let "vidlength = vidlength / 60"
+  params=$(ffprobe -loglevel 0 -show_format -show_streams -i $FILE | grep PARAMS)
+
+  let "vidlength = vidlength / 60"
   for ((i = 00; i < vidlength; i++)) 
   do
    	let "vcurrent = vstart + i"
@@ -176,3 +226,4 @@ do
 done
 
 echo "completed all assigned parts for $day (modified by s and e)"
+clear_live "za-digest-live"

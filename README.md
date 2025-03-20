@@ -14,7 +14,7 @@ This assumes you either have github.com/gtxaspec/wz_mini_hacks on your camera (i
 
 # Current Features
 
-As of 2024-10-19, I've got the following:
+As of 2025-03-20, I've got the following:
 * Script to download from Wyze V3's SD card to a computer (za-toru.sh ) for either wyze_hacks or wz_mini_hacks
 * Produce screenshots and display the screenshots in HTML pages to identify activity (za-miru.sh )
 * Identify and label video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages, then copy the "generate ranges" output to a string and send to za-horu.sh )
@@ -23,7 +23,7 @@ As of 2024-10-19, I've got the following:
 * display marked video form multiple cameras in an expandable bottom timeline so that footage can be lined up.
 * support for cron style hourly running
 * added code to send the minutes you want to the server (rather than copy/paste) and the cron (za-harau.sh ) to download it.
-
+* support for Thingino paths
 
 (とる means "to take" in Japanese and can refer both to (a) taking a picture　撮る, (b) taking an object　取る, and (c) taking food 採る ; みる means "to see" or "to watch"; ほる means "to bury" 掘る. These are all very good activities for a flying squirrel)
 

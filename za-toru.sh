@@ -63,6 +63,7 @@ fi
 
 
 echo $day " from " $minhour " to " $maxhour
+cpath="mnt/mmcblk0p1"
 
 if [ -n "$cam" ] 
 then
@@ -103,8 +104,8 @@ function hour_toru2
         echo "hour: " $hourp
         [[ -d $hourp ]] || mkdir $hourp
         cd $hourp
-	#echo "root@"$wyzeip"/media/mmc/record/"$day/$hourp"/*.mp4"
-        scp -r  "root@"$wyzeip":/media/mmc/record/"$day/$hourp"/*.mp4"  "."
+	#echo "root@"$wyzeip"/$cpath/record/"$day/$hourp"/*.mp4"
+        scp -r  "root@"$wyzeip":/$cpath/record/"$day/$hourp"/*.mp4"  "."
 	cd ..
 }
 

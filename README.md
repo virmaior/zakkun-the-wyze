@@ -10,7 +10,13 @@ On its simplest level my goal is to automate the process of archiving footage by
 
 # Prerequisites
 
-This assumes you either have github.com/gtxaspec/wz_mini_hacks on your camera (it originally worked with have [wyzeHacks](https://github.com/HclX/WyzeHacks) and boa for file download ). It would also work with FTP access of any sort.
+This assumes you either have any of the following:
+1. wyzehacks running on your WyzeCam [wyzeHacks](https://github.com/HclX/WyzeHacks) and boa for file download.
+2. wz_mini_hacks [https://github.com/gtxaspec/wz_mini_hacks/] running
+3. Atomcam_tools [https://github.com/mnakada/atomcam_tools] running
+4. thingino [https://thingino.com] running
+
+This primarily impacts the downloading of images from the cameras. Processing assumes minutewise files.
 
 # Current Features
 

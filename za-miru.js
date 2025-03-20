@@ -1,4 +1,4 @@
-var za_classes = ['za_start','za_end','za_nothing'];
+const za_classes = ['za_start','za_end','za_nothing'];
 var za_size = za_classes.length;
 
 
@@ -328,16 +328,22 @@ function generate_ranges()
 
         var cam = miru_tool.cam;
 	$('.zminute_DIV').each(function(){
-	    var minute = $(this).attr('minute');
-		if ($(this).hasClass('za_start za_end')) {
+	   	 const $me = $(this);
+		 const minute = $me.attr('minute');
+	   
+		if ($me.hasClass('za_start za_end')) {
+			console.log('start/end minute');
 			if (!first_minute) {
 			   var range_name = get_range_name(minute);
 			   make_range(ranges,minute,minute,range_name,cam);
 			}
 
-		} else
-		if ($(this).hasClass('za_start')) { first_minute = minute; }
-		else if ($(this).hasClass('za_end')) {
+		} 
+		else if ($me.hasClass('za_start')) { 
+			console.log('minute start');
+			first_minute = minute; 
+		}
+		else if ($me.hasClass('za_end')) {
 			var range_name = get_range_name(first_minute);
 			make_range(ranges,first_minute,minute,range_name,cam);
 			first_minute = false;
@@ -440,20 +446,29 @@ function force_set(el,my_class)
 function shifter(e)
 {
         e.preventDefault();
-	var shifter = $(this).text();
-	var my_range = $(this).parent();
-	var source = $(this).closest('.zminute_DIV').attr('minute') * 1;
-	switch (shifter)
-	{
-             case "Up":var dest = source - 1; break;
-             case "Down":var dest = source +1; break;
+	const $me = $(this);
+	const move  = $me.text();
+	var my_range = $me.parent();
+	const srow = $me.closest('.zminute_DIV');
+	const source = srow.attr('minute') * 1;
+	var drow= false;
+	var dest = source;
+	while (!drow) {
+		switch (move)
+		{
+             		case "Up":dest = dest - 1; break;
+             		case "Down": dest = dest +1; break;
+		}
+	//	console.log('shifting from ' + source  + ' at ' + dest);
+		var drow_obj  =  $('.zminute_DIV[minute=' + dest.toString().padStart(2,"0") + ']');
+	//	console.log(drow_obj);
+		if (drow_obj.length > 0) { drow = drow_obj; }
+		if (dest < 0 ) {  return false; }
+		if (dest > 59 ) { return false; }
 	}
-	var dest = dest.toString().padStart(2,"0");
-	var source = source.toString().padStart(2,"0");
-	var srow = $('.zminute_DIV[minute=' +  source + ']');
-	var drow = $('.zminute_DIV[minute=' + dest + ']');
+
    	var state =  my_range.attr('state');
-        console.log('start with ' + source + ' dest  ' + dest + "and state " + state);
+        //console.log('start with ' + source + ' dest  ' + dest + "and state " + state);
 	my_range.find('INPUT').attr('minute',dest);
 	my_range.appendTo(drow.find('.zm_marker'));
 	drow.addClass(state);
@@ -603,9 +618,11 @@ fetch('/cgi-bin/za-horu.cgi?d=' + miru_tool.date  + '&h=' + miru_tool.hour  +  '
 	miru_tool.show();
 
 	$(document).find(".za_img:first").one('load',function(e){
-		var row_height = Math.floor($(".za_img[minute=00][screen=001]").height() + 1);
+		const $t = $(this);
+		const min = $t.attr('minute');
+		const sc = $t.attr('screen');
+		var row_height = Math.floor($(`.za_img[minute=${min}][screen=${sc}]`).height() + 1);
 		if (Number.isNaN(row_height)) { row_height = 200; }
-		console.log('row height:' + row_height);
 		document.documentElement.style.setProperty('--minute_height',row_height + "px" );
 	}).each(function(){
 	if(this.complete) {

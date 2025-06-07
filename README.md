@@ -20,7 +20,7 @@ This primarily impacts the downloading of images from the cameras. Processing as
 
 # Current Features
 
-As of 2025-03-20, I've got the following:
+As of 2025-06-07, I've got the following:
 * Script to download from Wyze V3's SD card to a computer (za-toru.sh ) for either wyze_hacks or wz_mini_hacks
 * Produce screenshots and display the screenshots in HTML pages to identify activity (za-miru.sh )
 * Identify and label video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages, then copy the "generate ranges" output to a string and send to za-horu.sh )
@@ -30,6 +30,7 @@ As of 2025-03-20, I've got the following:
 * support for cron style hourly running
 * added code to send the minutes you want to the server (rather than copy/paste) and the cron (za-harau.sh ) to download it.
 * support for Thingino paths
+* histogram to show frame by frame differences using JavaScript
 
 (とる means "to take" in Japanese and can refer both to (a) taking a picture　撮る, (b) taking an object　取る, and (c) taking food 採る ; みる means "to see" or "to watch"; ほる means "to bury" 掘る. These are all very good activities for a flying squirrel)
 
@@ -112,9 +113,9 @@ Wyze cameras often lose the date/time and configs or reboot . This checks to mak
 The default directory is not able to run cgi-bin code in these distributions. Instead, the cgi-bin files need to go to `/usr/lib/cgi-bin`
 
 
-# Future Project
+# Histogram
 
-Another idea would be to compare the images from the screenshots and use that to speed up the process. Assume that change beneath a threshold is noise and only show items with higher change. But at least for our videos, I haven't seen a good tool that can detect Zaccheus very well. (I still don't have a good method for rapidly comparing the screenshots -- I guess the most basic idea would be (a) reduce color palette , (b) reduce image size, look for differences that way, (c) have a threshold).
+Using JavaScript canvas functionality the za-miru.js code now shrinks down the images and lowers their quality in the background to compare them. By shrinking them and lowering the quality, the amount of noise is going to down. It then makes an array of these and uses the second-largest value to determine a histogram threshold. This will let the end user find places where the image has changed between frames. (The histogram functionality assumes 3 images / minute).
  
 
 # General Limitations

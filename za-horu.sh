@@ -15,12 +15,16 @@ do
 	d)    		day=${VALUE} ;;     
 	i)		inp=${VALUE} ;;
         debug)          debug=${VALUE} ;;
+	sep)		sep=${VALUE} ;;
 	*)   		echo "unknown: " $KEY  " " $VALUE ;;
     esac    
 
 done
 
-
+if [ -z "$sp" ];
+then
+	sep="-"
+fi
 
 if [ -z  "$inp" ]
 then
@@ -52,25 +56,30 @@ function make_piece
 	fi
 	if [ "$3" -eq "$5" ]
 	then
-     		if [ -n "$7" ] ; then 
-			echo -n "\noutpoint $7" 
+     		if [ -n "$7" ] ; then
+			echo -n "\noutpoint $7"
 		fi
 	fi
-
 }
 
 function switch_camera_dir
 {
 	cam=$1
 	dday=$2
-	if  [ "$1" = "1" ]
+	hour=$3
+	us="_"
+	#if we have a new fangled version of the directory use it!
+	if  [  -d "$cwd/$dday$us$cam/$hour" ];
+	then
+		cd "$cwd/$dday$us$cam"
+		echo "using underscore version"
+	elif  [ "$1" = "1" ];
 	then
 		cd "$cwd/$dday"
 	else
-		cd "$cwd/$dday-$cam"
+		cd "$cwd/$dday$sep$cam"
 	fi
 }
-
 
 function db_insert
 {
@@ -110,9 +119,8 @@ do
 
 done
 
-    switch_camera_dir $cam $mdate
+    switch_camera_dir $cam $mdate $hour
     pth=$(pwd)
-
 
   meta="params=ps:$spart;pe:$epart"
   ###echo "\n $spart \n"
@@ -129,7 +137,6 @@ done
   do
 	echo $(make_piece $pth $hour $i $stime $etime "$spart" "$epart" )
   done
-
 
 if [ -z  "$debug" ]
 then
@@ -154,10 +161,6 @@ function make_events
    make_event $hour $cam $seg
   done
 }
-
-
-
-
 
 IFS="V"
 echo $inp

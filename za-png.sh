@@ -28,11 +28,20 @@ if [ -z "$day" ]; then
 fi
 
 
-if [ "$cam" = "1" ]; then
- dcm=$day
+spt="_"
+if [ -d "$cwd/$day$spt$cam/$h" ]; then
+   echo "used new stream"
+   dcm="$day$spt$cam"
 else
- dcm=$day-$cam
+   echo "used old stream"
+   spt="-"
+   if [ "$cam" = "1" ]; then
+    dcm=$day
+  else
+   dcm=$day$spt$cam
+  fi
 fi
 
+echo  "source file: $dcm/$h/$min"
 makepng $dcm/$h/$min.mp4 captures/$dcm-$h-$min.png $sec
 

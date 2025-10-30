@@ -14,20 +14,20 @@ class Zrange{
 
   static from_JSON(mux,x)
   {
-    var pieces  = mux.split(';');
-    var date = miru_tool.date;
+    const pieces  = mux.split(';');
+    var date = window.miru_tool.date;
     var cam = "";
     var hour ="";
-    pieces.forEach(function(item){
-        var smallp = item.split(':');
+    pieces.forEach((item) => {
+        const smallp = item.split(':');
         switch (smallp[0]) {
                 case "h": hour = smallp[1];  break;
                 case "d": date = smallp[1];  break;
                 case "c": cam = smallp[1];      break;
         }
     });
-	var y = [];
-	x.forEach(function(item){
+	const y = [];
+	x.forEach( (item) => {
 		y.push(  new Zrange(date,hour,cam,item["start"],item["end"],item["label"]));
 	});
 	return  y;
@@ -35,10 +35,10 @@ class Zrange{
 
   static from_string(x)
   {
-    var pieces	= x.split(';');
+    const pieces	= x.split(';');
     var cam = ""; var hour = ""; var date = ""; var start = ""; var end = ""; var label = "";
-    pieces.forEach(function(item){
- 	var smallp = item.split(':');
+    pieces.forEach((item) => {
+ 	const smallp = item.split(':');
  	switch (smallp[0]) {
 		case "c":
 		case "cam":  cam = smallp[1];	break;
@@ -56,36 +56,54 @@ class Zrange{
     return new Zrange(date,hour,cam,start,end,label);
   }
 
+  makePrettyLabel()
+  {
+        let item_label_pretty = 'blank';
+        if (this.label) { 
+                item_label_pretty = this.label.replace(/_/g," ");
+        }
+	return item_label_pretty;
+  }
+
+
+  appendDIV(t,newHTML)
+  {
+    document.querySelector(t).insertAdjacentHTML('beforeend',newHTML);
+  }
+
   cross_reference()
   {
-                var item_label_pretty = this.label.replace(/_/g," ");
-                $('.other_cams[minute="' + this.start +  '"]').append('<div class="cam_' + this.cam + ' za_start_weak">' + item_label_pretty + '</div>');
-                var i = (this.start *1);
-                if (this.end == this.start) { return false; }
-		var last_mid = (this.end * 1) -1;
-                while (i  < last_mid) {
-                        i++;
-                        var i_pretty = String(i).padStart(2, '0')
-                        $('.other_cams[minute="' + i_pretty +  '"]').append('<div class="cam_' + this.cam + ' za_continue_weak">' + item_label_pretty + '</div>');      
-                }
-                var i_pretty =  String(this.end * 1).padStart(2, '0')
-               $('.other_cams[minute="' + i_pretty +  '"]').append('<div class="cam_' + this.cam + ' za_end_weak">' + item_label_pretty + '</div>');
-	}
+	const item_label_pretty = this.makePrettyLabel();
+        this.appendDIV('.other_cams[minute="' + this.start +  '"]','<div class="cam_' + this.cam + ' za_start_weak">' + item_label_pretty + '</div>');
+        var i = (this.start *1);
+        if (this.end == this.start) { return false; }
+	var last_mid = (this.end * 1) -1;
+        while (i  < last_mid) {
+                i++;
+                var i_pretty = String(i).padStart(2, '0')
+                this.appendDIV('.other_cams[minute="' + i_pretty +  '"]','<div class="cam_' + this.cam + ' za_continue_weak">' + item_label_pretty + '</div>');
+        }
+        var i_pretty =  String(this.end * 1).padStart(2, '0')
+        this.appendDIV('.other_cams[minute="' + i_pretty +  '"]','<div class="cam_' + this.cam + ' za_end_weak">' + item_label_pretty + '</div>');
+   }
 
- self_reference()
-{
-                var item_label_pretty = this.label.replace(/_/g," ");
-                var i_pretty =  String(this.start * 1).padStart(2, '0')
-                $(".zminute_DIV[minute=" + i_pretty + "] .zm_marker .range_label").remove();
-                $(".zminute_DIV[minute=" + i_pretty + "]").addClass('za_start');
-                range_start_html(i_pretty,item_label_pretty);
-                i_pretty =  String(this.end * 1).padStart(2, '0');
-                $(".zminute_DIV[minute=" + i_pretty + "]").addClass('za_end');
-		if (this.end > this.start) {
-                	$(".zminute_DIV[minute=" + i_pretty + "] .zm_marker .range_label").remove();
-                	range_end_html(i_pretty);
-		}
-}
+ 	self_reference()
+	{
+        const item_label_pretty = this.makePrettyLabel();
+        var i_pretty =  String(this.start * 1).padStart(2, '0');
+	const startEl = document.querySelector(`.zminute_DIV[minute="${i_pretty}"]`);
+	startEl.querySelectorAll(".zm_marker .range_label").forEach( label => { label.remove(); } );
+ 	startEl.classList.add('za_start');
+        window.miru_tool.startHTML(i_pretty,item_label_pretty);
+        i_pretty =  String(this.end * 1).padStart(2, '0');
+
+        const endEl = document.querySelector(`.zminute_DIV[minute="${i_pretty}"]`);
+	endEl.classList.add('za_end');
+	if (this.end > this.start) {
+	        endEl.querySelectorAll(".zm_marker .range_label").forEach( label => { label.remove(); } );
+        	window.miru_tool.endHTML(i_pretty);
+	}
+	}
 
 
   reference(current_hour, current_cam)
@@ -104,7 +122,9 @@ class Zrange{
   {
     var clean_label = "blank";
     if (this.label !== undefined) {
-	    var clean_label = this.label.replace(' ','_');
+		 if (this.label) {
+	    		clean_label = this.label.replace(' ','_');
+		}
 	}
     return "d:" + this.date + ";h:" + this.hour  +  ";c:" + this.cam +  ";s:" + this.start + ";e:" + this.end + ";l:" +  clean_label; 
   }
@@ -127,32 +147,84 @@ class Zrange{
  	url = url + "/screens" + this.hour + ".html"; 
         return '<div class="output_hour cam_' + this.cam + '">' + this.hour + '<Br /> <a href="'  + url  + '">' + this.cam + '</a></div>'; 
  }
+
+
 }
 
-const miru_tool = 
+window.miru_tool = 
 {
 	date:false, 
 	cam: false,
 	max_cam_count : 7,
 	hour:false,
 	run_string: false,
+
+bindShift:function(mxt)
+{
+        mxt.find('.shifter').on('click',shifter);
+},
+shiftHTML:function()
+{
+  return '<button class="shifter">Up</button><button class="shifter">Down</button>';
+},
+
+startHTML:function(minute,value)
+{
+        const mxt = $('.zminute_DIV[minute=' + minute + ']');
+        mxt.find('.zm_marker').append('<div class="range_label" state="za_start"><input class="rl_name"  minute="' + minute + '" value="' + value + '" />' + 
+	this.shiftHTML() + '</div>');
+        this.bindShift(mxt);
+},
+
+endHTML:function(minute)
+{
+        const mxt = $('.zminute_DIV[minute=' + minute + ']');
+        mxt.find('.zm_marker').append('<div class="range_label" state="za_end">'  + this.shiftHTML() + '<div>');
+        this.bindShift(mxt);
+},
+
+	make_range:function(ranges,start,end, label,cam)
+	{
+   		ranges.push (new  Zrange(this.date,this.hour,cam,start,end,label));
+	},
 	copied:function()
 	{
 		this.run_string.setAttribute('state','copied');
+	},
+	bind_clearer:function()
+	{
+        document.querySelectorAll('.clearer').forEach (cl => {
+                if (cl._click) {
+                         cl.removeEventListener('click', cl._click);
+                } 
+                cl._click =  (e) => { this.clear_all(e); } ;
+                cl.addEventListener('click',cl._click); 
+        });
 	},
 	init:function()
 	{
 		this.ranges = document.getElementById("ranges");
 		this.run_string = document.getElementById("run_string");
-	        this.date = $(".za_top_DIV").attr('day');
-	        this.cam = $(".za_top_DIV").attr('cam');
-        	this.hour = $(".za_top_DIV").attr('hour');
-        	$(".za_top_DIV").addClass("cam_" + this.cam); 
+		const ztd = document.querySelector(".za_top_DIV");
+	        this.date = ztd.getAttribute('day');
+	        this.cam = ztd.getAttribute('cam');
+		let curcam = this.cam;
+		if (curcam > 6) { curcam--;  }
+	        document.documentElement.style.setProperty('--cur-cam',curcam );
+        	this.hour = ztd.getAttribute('hour');
+        	ztd.classList.add("cam_" + this.cam);
 		if (document.getElementsByClassName("clear1").length == 0) {
-			$(".range_tools").append('<div class="clear1" onclick="miru_tool.clear1()" >Clear 1</div>');
-			$(".clearer").off('click').on('click',this.clear_all);
+			document.querySelector(".range_tools").insertAdjacentHTML('beforeend','<div class="clear1" onclick="window.miru_tool.clear1(e)" >Clear 1</div>');
+			this.bind_clearer();
 		}
-		$('BODY').append('<PRE style="display:none"  id="real_string"></PRE>');
+document.body.append(Object.assign(document.createElement('pre'), {
+  id: 'real_string',
+  style: 'display:none'
+}));
+
+	this.bind_clearer();
+        document.querySelectorAll(".next_cam").forEach( nc => { nc.addEventListener('click',(e) => { this.next_feed(e);} ); });
+        document.querySelectorAll(".prev_cam").forEach( nc => { nc.addEventListener('click',(e) => { this.prev_feed(e);} ); });
 	},
 	prev_feed:function(e) {
                 e.preventDefault();
@@ -177,11 +249,11 @@ const miru_tool =
 	},
 	update_ranges:function(clean_ranges)
 	{
-        	var all_ranges = miru_tool.load();
+        	var all_ranges = this.load();
         	if (!all_ranges)  { all_ranges = {} }
-        	all_ranges["h:" + miru_tool.hour + ";c:" +  miru_tool.cam ] = clean_ranges;
+        	all_ranges["h:" + this.hour + ";c:" +  this.cam ] = clean_ranges;
         	console.log("updated to " + all_ranges);
-        	miru_tool.store(all_ranges);
+        	this.store(all_ranges);
 	},
 	store: function(value)
 	{
@@ -190,69 +262,106 @@ const miru_tool =
 	},
 	clear1:function()
 	{
-		var all_ranges = this.load();
+		const all_ranges = this.load();
         	if (!all_ranges) {  	return false; }
 		delete all_ranges["h:" + this.hour + ";c:" + this.cam];
 		this.store(all_ranges);
-		$(".zminute_DIV").removeClass('za_start , za_end');
-		$(".range_label").remove();
-		miru_tool.show();
+		document.querySelectorAll('.zminute_DIV').forEach(zm => {
+			zm.classList.remove('za_start');
+                        zm.classList.remove('za_end');
+
+		});
+  		document.querySelectorAll('.range_label').forEach (rl => { rl.remove(); } );
+		this.show();
 	},
 	clear_all:function()
 	{
-		miru_tool.store({});
-		miru_tool.ranges.innerHTML = '<div id="select_bar"></div>';
-		  generate_select_bar();
-  		miru_tool.run_string.innerHTML ='';
-		miru_tool.run_string.setAttribute('state','clear');
+		this.store({});
+		this.ranges.innerHTML = '<div id="select_bar"></div>';
+		this.generateBar();
+  		this.run_string.innerHTML ='';
+		this.run_string.setAttribute('state','clear');
 	},
 	show:function()
 	{
 
-        var all_ranges = miru_tool.load();
+        var all_ranges = this.load();
         if (!all_ranges) {  all_ranges  = []; }
         var my_string = "";
-        var cam = miru_tool.cam; 
-        var this_hour = "h:" + miru_tool.hour;
-        var html_output = "";
+        const cam = this.cam;
+        var this_hour = "h:" + this.hour;
+        const htmls = [];
 
-        $('.other_cams').empty();
+	document.querySelectorAll('.other_cams').forEach(el => {
+  		el.innerHTML = ''; 
+	});
+
         for(var hour in all_ranges)
         {
-                var zr = Zrange.from_JSON(hour,all_ranges[hour]);
+                const zr = Zrange.from_JSON(hour,all_ranges[hour]);
 		my_string +=  hour + '>';
  		var piece_count = 0;
-		var my_html = [];
-		zr.forEach(function(item){
-			piece_count++; 
+		const my_html = [];
+		zr.forEach((item) => {
+			piece_count++;
 			if (piece_count > 1) { my_string += ","; }
-			my_string +=   item.express_string(); 
+			my_string +=   item.express_string();
 			my_html.push( item.express_html());
-			item.reference(miru_tool.hour,miru_tool.cam);
-			console.log("pushed piece " + my_string);
+			item.reference(this.hour,miru_tool.cam);
+
 		});
+		const ar_parts = hour.split(";");
+                htmls.push('<div class="output_row" hour="' + this.hour  + '" cam=' + ar_parts[1]   +  '>' + zr[0].hour_label()  +  my_html.join('') + '</div>');
+
 		my_string += "V\n";
-		html_output +=   '<div class="output_row">' + zr[0].hour_label()  +  my_html.join('') + '</div>';
                 console.log(my_string);
-        }
-        const day = miru_tool.date;
-        $('#ranges').html( html_output);
-        generate_select_bar();
-        miru_tool.run_string.innerHTML = 'sudo zsh za-horu.sh d=' + day  + '  i="' + my_string + '"';
-	$("#real_string").html(my_string);
+        	}
+	document.getElementById('ranges').innerHTML = htmls.join('');
+	this.generateBar();
+	this.run_string.innerHTML = 'sudo zsh za-horu.sh d=' + this.date  + '  i="' + my_string + '"';
+	document.getElementById("real_string").innerHTML = my_string;
 	},
 	png:function(min,sec)
 	{
-	  exec_copy('sudo zsh za-png.sh d='  + miru_tool.date   + ' cam=' + miru_tool.cam + ' h=' + miru_tool.hour + ' min=' + min + ' sec=' + sec);
+	  exec_copy('sudo zsh za-png.sh d='  + this.date   + ' cam=' + this.cam + ' h=' + this.hour + ' min=' + min + ' sec=' + sec);
+	},
+generateBar:function()
+{
+        console.log("generated select bar");
+        $("#select_bar").remove();
+        $("#ranges").prepend('<div id="select_bar"></div>');
+	const sBar =  $("#select_bar");
+	sBar.append('<div class="output_hour">Jump</div>');
+        document.querySelectorAll(".zminute_DIV").forEach( el => {
+                const minute = el.getAttribute('minute');
+                var match_classes = ' ' + el.className.replace('zminute_DIV','');
+                sBar.append('<div class="sb_DIV' + match_classes  + '" id="sb_' + minute + '" minute="' + minute + '" style="--minute:' + minute +  '">' +
+			    '<a class="MIN_jumper">' + minute + '</a></div>');
+        });
+        document.querySelectorAll(".MIN_jumper").forEach (mj => { mj.addEventListener('click',(e) => {
+                e.preventDefault();
+                $([document.documentElement, document.body]).animate({
+                        scrollTop: $('.zminute_DIV[minute="' +  $(e.currentTarget).text()  + '"]').offset().top
+                }, 100);
+        }); });
+	document.querySelectorAll('.za_minute').forEach(el => { el.classList.add('za_nothing'); });
+        $(".za_DIV").off('click').on('click',
+        (e) => {
+                var minute = $(e.currentTarget).parent().attr('minute');
+                toggle_state(minute);
+        });
+        img_compare.highlight();
 	}
-
 }
 
 function ungroup(zgroup)
 {
-	console.log("unstack on " + $(this).attr('zgroup'));
-	$('.zminute_DIV[zgroup=' + zgroup  + ']').css('position','relative').css('margin-top',0).attr('zgm',0);
-
+	console.log("unstack on " + this.getAttribute('zgroup'));
+	document.querySelectorAll('.zminute_DIV[zgroup=' + zgroup  + ']').foreach( a => {
+		a.style.postion = 'relative';
+		a.style.marginTop = '0';
+		a.setAttribute('zgm',0);
+	});
 }
 
 function faster_look(group_size)
@@ -262,34 +371,28 @@ function faster_look(group_size)
         document.documentElement.style.setProperty('--zminute_height',(row_height + 1) + "px" );
 
 	$(".zminute_DIV").each(function(){
+		const $t = $(this);
 		var group = Math.floor(item_count / group_size);
 		var num_in_group = item_count - ((group)  *  group_size);
-		$(this).attr('zgroup',group);
-		$(this).attr('zgm',num_in_group + 1);
+		$t.attr('zgroup',group);
+		$t.attr('zgm',num_in_group + 1);
 		if (num_in_group > 0) {
-			$(this).css('position','absolute');
-			$(this).css('margin-top','-' + (row_height) + 'px');
+			$t.css('position','absolute');
+			$t.css('margin-top','-' + (row_height) + 'px');
 		}
-		$(this).off('click').on('click',function(e){
+		$t.off('click').on('click',(e) => {
 			e.preventDefault();
-  			ungroup($(this).attr('zgroup'));
-					});
+  			ungroup(e.currentTarget.getAttribute('zgroup'));
+		});
 		item_count++; 
 	});
 }
 
-
-function make_range(ranges,start,end, label,cam)
-{
-   ranges.push (new  Zrange(miru_tool.date,miru_tool.hour,cam,start,end,label));
-}
-
-
 function zsh_decode(my_ranges)
 {
-       var  zsh_output = [];
-        my_ranges.forEach(
-	function(item){
+	const  zsh_output = [];
+        my_ranges.forEach( (item) => 
+	{
                 zsh_output.push( item.express_string());
         });
         return zsh_output.join(',');
@@ -314,57 +417,58 @@ function get_range_name(minute)
 function generate_ranges()
 {
 	console.log("started range generator");
-	var ranges = [];
+	const ranges = [];
 	var first_minute = false;
 	var tight_interval = 1;
-	var range_name = false;
+	var rangeName = false;
+	const mt = window.miru_tool;
 
-        var cam = miru_tool.cam;
-	$('.zminute_DIV').each(function(){
-	   	 const $me = $(this);
-		 const minute = $me.attr('minute');	   
-		if ($me.hasClass('za_start za_end')) {
+        const cam = mt.cam;
+	document.querySelectorAll('.zminute_DIV').forEach((el) => {
+		 const minute = el.getAttribute('minute');
+		 const hasStart = el.classList.contains('za_start');
+                 const hasEnd = el.classList.contains('za_end');
+		let rangeName = '';
+		if (hasStart && hasEnd) {
 			console.log('start/end minute');
 			if (!first_minute) {
-			   var range_name = get_range_name(minute);
-			   make_range(ranges,minute,minute,range_name,cam);
+			   rangeName = get_range_name(minute);
+			   mt.make_range(ranges,minute,minute,rangeName,cam);
 			}
 
-		} 
-		else if ($me.hasClass('za_start')) { 
-			console.log('minute start');
-			first_minute = minute; 
 		}
-		else if ($me.hasClass('za_end')) {
-			var range_name = get_range_name(first_minute);
-			make_range(ranges,first_minute,minute,range_name,cam);
+		else if (hasStart) {
+			console.log('minute start');
+			first_minute = minute;
+		}
+		else if (hasEnd) {
+			rangeName = get_range_name(first_minute);
+			mt.make_range(ranges,first_minute,minute,rangeName,cam);
 			first_minute = false;
-			range_name = false;
 		}
 
 	});
 
 	if (first_minute) {
 		console.log("determined final block is active");
-        	var range_name = get_range_name(first_minute);
-		make_range(ranges,first_minute,59,range_name,cam);
+        	rangeName = get_range_name(first_minute);
+		mt.make_range(ranges,first_minute,59,rangeName,cam);
 	 }
 
 
 	if (ranges.length == 0) {
 		alert("no ranges marked for camera #" + cam  + "\n Stopping Range Generation");
-		return false; 
+		return false;
 	}
 
 	console.log("tidying ranges");
-	var hour = miru_tool.hour;
-	var clean_ranges = [];
+	const hour = mt.hour;
+	const clean_ranges = [];
 	var last_start = false;
 	var last_end = false;
 	var last_name_range =false;
 	ranges.forEach(
-	function (item,index) {
-		console.log(item);
+	 (item,index) =>  {
 		var current_start = item.start;
 		var current_end = item.end;
 	        var range_name  = item.label;
@@ -374,7 +478,7 @@ function generate_ranges()
 		   if (current_start == (last_end + 1)) {
 			last_end = current_end;
 		   } else {
-			make_range(clean_ranges,last_start,last_end,last_range_name,cam);
+			mt.make_range(clean_ranges,last_start,last_end,last_range_name,cam);
 			last_start = current_start; last_end =  current_end; last_range_name = range_name;
 		   }
 		}
@@ -382,11 +486,11 @@ function generate_ranges()
 	});
 
 	if (last_start) {
-		make_range(clean_ranges,last_start,last_end,last_range_name,cam);
+		mt.make_range(clean_ranges,last_start,last_end,last_range_name,cam);
 	}
 	console.log(clean_ranges);
-	miru_tool.update_ranges(clean_ranges);
-	miru_tool.show();
+	mt.update_ranges(clean_ranges);
+	mt.show();
 }
 
 
@@ -394,14 +498,30 @@ function find_before(minute)
 {
 	var search_min =  minute -1;
 	while (search_min >= 0 ) {
-    		var s = search_min.toString().padStart(2,"0");
-		var test = $(".zminute_DIV[minute=" + s + "]");
-		if (test.hasClass('za_end')) { return 'za_end'; }
-                if (test.hasClass('za_start')) { return 'za_start'; }
-
+    		const s = search_min.toString().padStart(2,"0");
+		const test = document.querySelector(`.zminute_DIV[minute="${s}"]`);
+		if (test?.classList.contains('za_end')) return 'za_end';
+		if (test?.classList.contains('za_start')) return 'za_start';
 		search_min = search_min - 1;
 	}
 	return "za_end";
+}
+
+function toggle_state(minute)
+{
+        console.log("called toggle 3 on " + minute);
+        var mxt = $('.zminute_DIV[minute=' + minute + ']');
+        toggle_set( $('.sb_DIV[minute=' + minute + ']'));
+        toggle_set(mxt);
+        mxt.find('.zm_marker .range_label').remove();
+
+        if (mxt.hasClass('za_start')) {
+                var value = "";
+                if (mxt.attr('range_label') !== undefined) { value = mxt.attr('range_label'); }
+                window.miru_tool.startHTML(minute,value);
+        } else if (mxt.hasClass('za_end'))  {
+                window.miru_tool.endHTML(minute);
+        }
 }
 
 function toggle_set(el)
@@ -413,7 +533,7 @@ function toggle_set(el)
 	za_classes.forEach(
 	function(item,index)
 	{
-	   if ($(el).hasClass(item)) {
+	   if (el[0].classList.contains(item)) {
 		current_za_class = index;
 	   }
 	}
@@ -431,8 +551,9 @@ function toggle_set(el)
 
 function force_set(el,my_class)
 {
-        $(el).removeClass(za_classes.join(' '));
-        $(el).toggleClass(my_class); 
+	const $el = $(el);
+        $el.removeClass(za_classes.join(' '));
+        $el.toggleClass(my_class);
 }
 
 function shifter(e)
@@ -468,41 +589,7 @@ function shifter(e)
 
 	force_set( $('.sb_DIV[minute=' + source + ']'),'za_nothing');
 	force_set( $('.sb_DIV[minute=' + dest + ']'),state);
-	generate_select_bar();
-}
-
-
-function range_start_html(minute,value)
-{
-        var mxt = $('.zminute_DIV[minute=' + minute + ']');
-        mxt.find('.zm_marker').append('<div class="range_label" state="za_start"><input class="rl_name"  minute="' + minute + '" value="' + value + '" /><button class="shifter">Up</button><button class="shifter">Down</button>');
-        mxt.find('.shifter').on('click',shifter);
-
-}
-
-function range_end_html(minute)
-{
-        var mxt = $('.zminute_DIV[minute=' + minute + ']');
-        mxt.find('.zm_marker').append('<div class="range_label" state="za_end"><button class="shifter">Up</button><button class="shifter">Down</button><div>');
-        mxt.find('.shifter').on('click',shifter);
-}
-
-
-function toggle_state(minute)
-{
-	console.log("called toggle 3 on " + minute);
-	var mxt = $('.zminute_DIV[minute=' + minute + ']');
-	toggle_set( $('.sb_DIV[minute=' + minute + ']'));
-	toggle_set(mxt);
-        mxt.find('.zm_marker .range_label').remove();
-
-	if (mxt.hasClass('za_start')) {
-		var value = "";
-		if (mxt.attr('range_label') !== undefined) { value = mxt.attr('range_label'); }
-		range_start_html(minute,value);
-	} else if (mxt.hasClass('za_end'))  {
-		range_end_html(minute);
-	}
+	window.miru_tool.generateBar();
 }
 
 
@@ -524,7 +611,7 @@ function exec_copy(str,dof = false)
     var successful = document.execCommand('copy');
     var msg = successful ? 'successful' : 'unsuccessful';
     if (typeof dof  === 'function') {
-	dof();  
+	dof();
   	}
     console.log('Fallback: Copying text command was ' + msg);
   } catch (err) {
@@ -534,55 +621,72 @@ function exec_copy(str,dof = false)
   document.body.removeChild(textArea);
 }
 
-function generate_select_bar()
-{
-	console.log("generated select bar");
-	$("#select_bar").remove();
-	$("#ranges").prepend('<div id="select_bar"></div>');
-     	$("#select_bar").append('<div class="output_hour">Jump</div>');
-        $(".zminute_DIV").each(function(){
-                var minute = $(this).attr('minute');
-		var match_classes = ' ' + $(this)[0].className.replace('zminute_DIV','');
-                $("#select_bar").append('<div class="sb_DIV' + match_classes  + '" id="sb_' + minute + '" minute="' + minute + '" style="--minute:' + minute +  '"><a class="MIN_jumper">' + minute + '</a></div>');
-        });
-        $(".MIN_jumper").on('click',function(e){
-                e.preventDefault();
-                $([document.documentElement, document.body]).animate({
-                        scrollTop: $('.zminute_DIV[minute="' +  $(this).text()  + '"]').offset().top
-                }, 100);
-        });
-        $(".za_minute").addClass('za_nothing');
-        $(".za_DIV").off('click').on('click',
-        function(){
-                var minute = $(this).parent().attr('minute');
-                toggle_state(minute);
-        });
-	img_compare.highlight();	
-}
 
-var img_compare = 
+
+var img_compare =
 {
  scale:0.1,
+ parts:[],
  sensitivity:10,
+ base_width: 1920,
+ base_height: 1080,
+ iwidth: 0,
+ iheight: 0,
+ pwidth: (1920 / 3),
+ pheight:  (1080 /3),
  smap:[],
  debug:false,
-log(x)
-{
-  if (this.debug) {
-	console.log(x);
- }
+ log(x)
+ {
+    if (this.debug) {	console.log(x); }
+ },
+which_part(i) {
+   
+    const row =  Math.floor( i / (this.iwidth * 4));
+    const col =  (i / 4)  -  (row * this.iwidth);
+
+    let vertical = 't';
+    if (row > 2 * img_compare.pheight) vertical = 'b';
+    else if (row > img_compare.pheight) vertical = 'm';
+
+    let horizontal = 'l';
+    if (col > 2 * img_compare.pwidth) horizontal = 'r';
+    else if (col > img_compare.pwidth) horizontal = 'c';
+
+    return vertical +  horizontal;
 },
+ which_part_old(i)
+ {
+	const hheight  = this.iheight / 2;
+	const hwidth = this.iwidth / 2;
+	const row =  Math.floor( i / (this.iwidth * 4));
+	const col =  (i / 4)  -  (row * this.iwidth);
+
+	var region = ["t" , "l"];
+	if (col > hwidth) { region[1] = "r"; }
+/*	urusai++;
+	if (urusai < 10000) {
+        console.log('checked i of ' + i + '; interpreted as row ' + row + ' and col ' + col);
+	console.log( ' versus width ' + hwidth + ' and ' +  hheight + ' height resulting in region ' + region );
+}*/
+	
+	if (row > hheight) {  region[0] = "b"; }
+	return region.join('');
+ },
 run()
 {
    const c = [];
-   const iwidth = 1920 * this.scale;
-   const iheight = 1080 * this.scale;
+   img_compare.iwidth = this.base_width * this.scale;
+   img_compare.iheight = this.base_height * this.scale;
+   iwidth = img_compare.iwidth;
+   iheight = img_compare.iheight;
    const dmap = [] 
+
 
   /** create two canvases for running the image comparison, append them to the bottom of the document **/
   for (var i = 0; i <= 1;  i++) 
   {
-	$('body').append( '<canvas width="' + iwidth +  '" height="' + iheight +'"  id="c' + i +  '"></canvas>');
+	$('body').append( '<canvas width="' + img_compare.iwidth +  '" height="' + img_compare.iheight +'"  id="c' + i +  '"></canvas>');
   	c[i] = $('#c' + i)[0].getContext('2d',{willReadFrequently: true});
    }
   var run = 0; /* track run count */
@@ -596,14 +700,14 @@ run()
 			if (!img_obj) { continue;  }
 	   		run++;
 	  		c[run % 2].drawImage(img_obj,0,0,iwidth,iheight);
-          		img_compare.eightbit(c[run %2]); 
+          		img_compare.eightbit(c[run %2]);
 
 	   		if (run == 1) { continue;  }
 	   		var dpit  =  img_compare.compare(c[0].getImageData(0,0,iwidth,iheight).data,c[1].getImageData(0,0,iwidth,iheight).data);
 	   		dpit.min = fmnt;
 	   		dpit.screen = fscreen;
-			dpit.squery = squery; 
-			dmap.push(dpit);		
+			dpit.squery = squery;
+			dmap.push(dpit);
     		}
   	}
 	this.smap = dmap;
@@ -626,97 +730,96 @@ run()
 		}
                 $('.sb_DIV[minute=' + sc.min + ']').css('--dsize_' + sc.screen,sc.dsize + '');
         });
-console.log(this.smap);
+	console.log(this.smap);
 	this.smap.sort((a,b) =>  b.dsize - a.dsize).slice(0,10).forEach((sc,index) => {
-  	 $('.sb_DIV[minute=' + sc.min + ']').attr('stype','motion'); 
-         $(sc.squery).attr('stype','motion');
+  	 $('.sb_DIV[minute=' + sc.min + ']').attr('stype','motion').attr('marea',sc.region[0]).attr('yarea',sc.region[1]);
+        const $sc =  $(sc.squery);
+	$sc.attr('stype','motion').attr('marea',sc.region[0]).attr('yarea',sc.region[1]);
+	$sc.parent().attr('marea',sc.region[0]).attr('yarea',sc.region[1]);
 	});
 	$('#ranges').css('--maxd',ds2 + '');  //use the second highest value
 	console.log('set maxd to ' + ds2 );
   },
-compare(a,b)
-{
+  compare(a,b)
+  {
 	var diff = 0;
 	var dsize = 0;
-	for(var i = 0, il = a.length; i < il; i++) { /** pixel by pixel identify differences up to sensitivity and add their magnitude **/
-                 const  ds1 = Math.abs(a[i] - b[i]);
+	var regions = { 'tl' : 0, 'tc':0, 'tr':  0 , 'ml': 0, 'mc' :0, 'mr' :0,  'bl' : 0 , 'bc': 0,  'br' : 0 };
+        img_compare.pheight  = this.iheight / 3;
+        img_compare.pwidth  = this.iwidth / 3;
+	for(var i = 0, il = a.length; i < il; i +=4) { /** pixel by pixel identify differences up to sensitivity and add their magnitude **/
+                 const  ds1 = Math.abs(a[i] - b[i]) + Math.abs(a[i+1] - b[i+1]) + Math.abs(a[i+2] - b[i+2]);
   		 if  (ds1 > this.sensitivity) { 
 			diff++;
-			dsize += ds1; 
+			dsize += ds1;
+
+			const my_reg = img_compare.which_part(i)
+			regions[my_reg] = (regions[my_reg] * 1) +  ds1; 
 		}  
 	}
 	this.log('difference count of ' + diff + ' over size ' + a.length + ' diff magnitude ' + dsize);
+
+	
 	return {
 		'diff': diff ,
-		'dsize' : dsize
+		'dsize' : dsize,
+		'len' : a.length,
+		'region' :  Object.keys(regions).reduce((a, b) => regions[a] > regions[b] ? a : b),
+		'regions' : regions
 		} 
 },
 
-
   eightbit(ctx) {
-var imgdata = ctx.getImageData(0,0,1920 * this.scale, 1080 * this.scale); // get data
-var data = imgdata.data; // bytes
-const crange= 8;
-// 8-bit: rrr ggg bbb
-for(var i = 0; i < data.length; i += 4) {
-    data[i]     = img_compare.nearest(data[i],     crange); // set value to nearest of 8 possibilities
-    data[i + 1] = img_compare.nearest(data[i + 1], crange);
-    data[i + 2] = img_compare.nearest(data[i + 2], crange);
-}
+	var imgdata = ctx.getImageData(0,0,this.base_width * this.scale, this.base_height * this.scale); // get data
+	var data = imgdata.data; // bytes
+	const crange= 8;
+	// 8-bit: rrr ggg bbb
+	for(var i = 0; i < data.length; i += 4) {
+    		data[i]     = img_compare.nearest(data[i],     crange); // set value to nearest of 8 possibilities
+    		data[i + 1] = img_compare.nearest(data[i + 1], crange);
+    		data[i + 2] = img_compare.nearest(data[i + 2], crange);
+	}
 
-ctx.putImageData(imgdata, 0, 0); // put image data to canvas
-},
-
-nearest(x, a) { // will round down to nearest of a possibilities
-                         // in the range 0 <= x <= 255
-    return Math.floor(x / (255 / a)) * (255 / a);
-}
-
+	ctx.putImageData(imgdata, 0, 0); // put image data to canvas
+  },
+  nearest(x, a) {
+	// will round down to nearest of a possibilities in the range 0 <= x <= 255
+    	  return Math.floor(x / (255 / a)) * (255 / a);
+  }
 }
 
 
 $(document).ready(function() {
-	miru_tool.init();
-    $(".zminute_DIV").each(function(){
-                var minute = $(this).attr('minute');
-                $(this).find('.zm_marker:first').append('<div class="other_cams" minute="' + minute  + '"></div>');
+	const mt = window.miru_tool;
+	mt.init();
+    	document.querySelectorAll(".zminute_DIV").forEach( zm => {
+                const minute = zm.getAttribute('minute');
+                $(zm).find('.zm_marker:first').append('<div class="other_cams" minute="' + minute  + '"></div>');
        });
+	document.querySelectorAll('.generator').forEach (g => { g.addEventListener('click',(e) => {  generate_ranges(); } ); });
 
-	$(".clearer").off('click').on('click',function(e) { miru_tool.clear_all() });
-	$(".next_cam").off('click').on('click',function(e) { 
-		miru_tool.next_feed(e);
-		
-	} );
-	$('.prev_cam').off('click').on('click',function(e) { miru_tool.prev_feed(e);  });
-	$('.generator').off('click').on('click',function(e) { 
-	generate_ranges()
-	} );
+	$('.cam7').html('Send').off('click').on('click',(e) =>  {
 
-	$('.cam7').html('Send').off('click').on('click',function(e) {
-		
-
-fetch('/cgi-bin/za-horu.cgi?d=' + miru_tool.date  + '&h=' + miru_tool.hour  +  '&i="' + encodeURIComponent($("#real_string").html()) + '"' )
+fetch('/cgi-bin/za-horu.cgi?d=' + mt.date  + '&h=' + mt.hour  +  '&i="' + encodeURIComponent($("#real_string").html()) + '"' )
   .then(response => {
     if (!response.ok) {
       throw new Error('Network response was not ok: ' + response.statusText);
     } else {
-	                $("#run_string").attr('state','sent');  
+	                $("#run_string").attr('state','sent');
   }
     return response.json(); // or response.text(), depending on the response type
   })
   .then(data => console.log('Response:', data))
   .catch(error => console.error('Request failed:', error));
-
-//		exec_copy( "sudo nohup zsh za-toru.sh scp=9 cam=7 m=y d=" + miru_tool.date + " s=" + miru_tool.hour + " e=" + miru_tool.hour) ;
 	});
-	$('.copyit').off('click').on('click',function(e) {
+	$('.copyit').off('click').on('click',(e) =>  {
 	try {
 	        exec_copy($("#run_string").text().replace(/(?:\r\n|\r|\n)/g,''),miru_tool.copied());
   	} catch (err) {
     	  console.error('Fallback: Oops, unable to copy', err);
   	}
 	});
-	$(".dim_input").on('change',function() {
+	$(".dim_input").on('change',(e) => {
 		const de = document.documentElement.style;
 		de.setProperty('--ss_top',$('#top').val() );
 		de.setProperty('--ss_left',$('#left').val() );
@@ -725,12 +828,12 @@ fetch('/cgi-bin/za-horu.cgi?d=' + miru_tool.date  + '&h=' + miru_tool.hour  +  '
 		console.log('dimensions: top:' + $('#top').val() + ' l:' + $('#left').val() + ' r:'  + $('#right').val() + ' b:' +  $('#bottom').val() );
 	});
 
-	miru_tool.show();
+	mt.show();
 
 	let tgt = false;
 	let count = 0;
-	$(document).find('.zminute_DIV').each(function(){
-		const $za_imgs = $(this).find('.za_img');
+	document.querySelectorAll('.zminute_DIV').forEach((el) => {
+		const $za_imgs = $(el).find('.za_img');
 		if ($za_imgs.length > count) {
 			tgt =  $za_imgs[0];
 			count = $za_imgs.length;
@@ -738,10 +841,11 @@ fetch('/cgi-bin/za-horu.cgi?d=' + miru_tool.date  + '&h=' + miru_tool.hour  +  '
 	});
 
 	if (tgt) {
-	$(tgt).one('load',function(e){
-		const $t = $(this);
-		const min = $t.attr('minute');
-		const sc = $t.attr('screen');
+	$(tgt).one('load',(e) => {
+		const t = e.currentTarget;
+		const $t = $(e.currentTarget);
+		const min = t.getAttribute('minute');
+		const sc = t.getAttribute('screen');
 		var row_height = Math.floor($(`.za_img[minute=${min}][screen=${sc}]`).height() + 1);
 		if (Number.isNaN(row_height)) { row_height = 200; }
 		document.documentElement.style.setProperty('--minute_height',row_height + "px" );
@@ -751,20 +855,40 @@ fetch('/cgi-bin/za-horu.cgi?d=' + miru_tool.date  + '&h=' + miru_tool.hour  +  '
 	}
 	}
 	);}
-	$('.za_DIV').each(function(){
-	   $(this).append('<div class="za_png" >PNG</div>');
+	document.querySelectorAll('.za_DIV').forEach((el)  => {
+	   $(el).append('<div class="za_png" >PNG</div>');
 	});
-	$('.za_png').off('click').on('click',function (e){
-           e.preventDefault();
-           e.stopPropagation();
-		miru_tool.png($(this).closest('.zminute_DIV').attr('minute'),parseInt(($(this).parent().attr('screen') -1) * 20));
+	$('.za_png').off('click').on('click', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		const t = e.currentTarget;
+		const $t = $(t);
+		mt.png(t.closest('.zminute_DIV').getAttribute('minute'),
+			parseInt(($t.parent().attr('screen') -1) * 20));
 	});
 
-image_done(() => { img_compare.run();  });
+	image_done(() => { img_compare.run();  });
+
+	const elements = document.querySelectorAll('.zminute_DIV');
+	const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+ 	const min = entry.target.getAttribute('minute');
+  	const me = document.querySelector(`.sb_DIV[minute="${min}"]`); // Use template literals for cleaner selector
+  if (entry.isIntersecting && me) { // Check if me exists to avoid errors
+    me.classList.add('inview');
+  } else if (me) {
+    me.classList.remove('inview');
+  }
+    });
+  }, {
+    root: null, // Use viewport as root
+    rootMargin: '0px', // Margin around the root
+    threshold: 0.1 // Trigger when 10% of the element is visible
+  });
+
+  elements.forEach(el => observer.observe(el));
 
 });
-
-
 
 function image_done(callback) {
   const images = document.querySelectorAll('img');
@@ -791,4 +915,3 @@ function image_done(callback) {
     }
   });
 }
-

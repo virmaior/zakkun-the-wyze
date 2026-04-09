@@ -17,6 +17,14 @@
 		fi
 	        messages+=("$cam - ${message//[$'\t\r\n ']}")
 		lmessage="$message"
+
+
+
+		m2=$(wget -qO- "http://192.168.9.$cam/cgi-bin/status.cgi?test=mount" | tr -d '\r\n' | sed 's/^ *//;s/ *$//')
+                if [[ "$m2" == "NG" ]]; then
+                        echo "Readonly Mount on Camera: $cam"
+                fi
+
 	done
 
 

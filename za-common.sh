@@ -3,7 +3,8 @@
 myos=$(uname)
 cwd=$(pwd)
 netmask=192.168.4
-ffmpeg="/usr/local/bin/ffmpeg"
+#ffmpeg="/usr/local/bin/ffmpeg"
+ffmpeg="/usr/bin/ffmpeg"
 mode="console"
 tpath="/var/www/html/tmp"
 

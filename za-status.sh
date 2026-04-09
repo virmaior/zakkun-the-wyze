@@ -1,4 +1,5 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
+
 typeset -i COUNTER=0
 cwd=$(pwd) 
 . /var/www/html/za-common.sh
@@ -17,6 +18,40 @@ fi
 i=0
 max=20240101
 IFS=" "
+
+typeset -A result   # top level: date → sub-array
+
+
+testcamdir()
+{
+  echo "Y"
+}
+
+for d in 202*; do
+    [[ -d $d ]] || continue
+
+
+    if [[ $d =~ '^(20[0-9]{6})([_-])?([1-9])?$' ]]; then
+
+        cdate=${match[1]} 
+	split=${match[2]}
+        cam=${match[3]} 
+
+
+        # Initialise sub-array for this date if needed
+	   (( ${+result[$cdate]} )) || result[$cdate] = ()
+	z=$(testcamdir "$cdate" "$split" "$cam")
+	echo "$cdate $cam $z"
+        result[$cdate][$cam]=$z
+    fi
+done
+
+
+# 4. Print cleanly
+print "Date       |   Status    "
+for date in ${(k)result}; do
+	print $result[$k]
+done
 
 
 for onedir in clips/2*/; do

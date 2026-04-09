@@ -21,6 +21,12 @@ if [ -z "$day" ]; then
  day=$(datediff -v-1H %Y%m%d ) 
 fi
 
-
-makepng $day-2/02/55.mp4 pile/$day.png 20.00
-
+cam=2
+spt="_"
+if [ -d "$cwd/$day$spt$cam" ]; then
+	echo "new file"
+	makepng $day$spt$cam/02/55.mp4 pile/$day.png 20.00
+else
+	echo "old file"
+	makepng $day-2/02/55.mp4 pile/$day.png 20.00
+fi

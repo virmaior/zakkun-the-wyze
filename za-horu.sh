@@ -17,7 +17,7 @@ do
         debug)          debug=${VALUE} ;;
 	sep)		sep=${VALUE} ;;
 	*)   		echo "unknown: " $KEY  " " $VALUE ;;
-    esac    
+    esac
 
 done
 
@@ -40,27 +40,6 @@ fi
 cwd=$(pwd)
 
 
-function make_piece
-{
-	typeset -Z 2 -i minp=$3
-
-#	echo "1"$1"\n2"$2"\n3"$3"\n4"$4"\n5"$5 "\n6"$6"\n7"$7"\n"
-        echo -n "$1/$2/$minp.mp4"
-
-
-	if [ "$3" -eq "$4" ]
-	then
-        	if [ -n "$6" ] ; then
-			 echo -n "\ninpoint $6"
-		fi
-	fi
-	if [ "$3" -eq "$5" ]
-	then
-     		if [ -n "$7" ] ; then
-			echo -n "\noutpoint $7"
-		fi
-	fi
-}
 
 function switch_camera_dir
 {
@@ -93,7 +72,6 @@ function make_event
 {
   IFS=";"
   desc=""
-  typeset -i tpiece=0
 
   meta=""
   spart=""
@@ -123,32 +101,94 @@ done
     pth=$(pwd)
 
   meta="params=ps:$spart;pe:$epart"
-  ###echo "\n $spart \n"
-  echo "$red"
-  echo "###(START)###\n Hour: $hour \n  Start minute:  $stime \n End minute: $etime \n Label: $desc\n###(END)###"
-  echo "$reest"
-  let	COUNTER++
-  db_insert $cam $mdate $hour $stime $etime $desc
-  product="$clips/$mdate-$hour-$stime-$cam-event$COUNTER$desc.$format"
-  echo -n "output file:"$product
-  echo "\n"
-  typeset -Z 2 -i minp=00
-  for ((i = $stime; i <= $etime; i++)) 
-  do
-	echo $(make_piece $pth $hour $i $stime $etime "$spart" "$epart" )
-  done
 
-if [ -z  "$debug" ]
-then
+
+# ─────────────────────────────────────────────────────────────
+#  Prepare concat list — only once — and skip missing minutes
+# ─────────────────────────────────────────────────────────────
+
+concat_list=()
+has_any=false
+
+typeset -Z2 minp=00
+for (( min = stime; min <= etime; min++ )); do
+    minp=${(l:2::0:)$((min))}     # left-pad with 0 to width 2
+
+	lpiece="$pth/$hour/$minp.mp4"
+    if [ ! -f "$lpiece" ]; then
+        # Optional: log skipped minute
+        # echo "  → skipping missing file: $lpiece" >&2
+        continue
+    fi
+    entry="file '$lpiece'"
+
+    # inpoint only on the very first segment we actually use
+    if [ "$min" -eq "$stime" ] && [ -n "$spart" ]; then
+        entry="$entry\n  inpoint $spart"
+    fi
+
+    # outpoint only on the very last segment we actually use
+    if [ "$min" -eq "$etime" ] && [ -n "$epart" ]; then
+        entry="$entry\n  outpoint $epart"
+    fi
+
+    concat_list+=("$entry")
+    has_any=true
+done
+
+
+# ─────────────────────────────────────────────────────────────
+#  Early exit if no usable segments
+# ─────────────────────────────────────────────────────────────
+
+if ! $has_any; then
+    echo "No existing minute files found between $stime–$etime → skipping event" >&2
+    # You may want to: continue / return / exit 1 / etc.
+    # For now we just skip ffmpeg part
+else
+    temp_concat=$(mktemp --tmpdir cam-concat.XXXXXX.txt)
+    printf '%s\n' "${concat_list[@]}" > "$temp_concat"
+
+	echo "$red"
+    # ────────────────────────────────────────
+    #   Show what would be concatenated (debug)
+    # ────────────────────────────────────────
+    echo "###(START)###"
+    echo " Hour:        $hour"
+    echo " Start minute: $stime"
+    echo " End minute:   $etime"
+    echo " Label:        $desc"
+    echo "###(END)###"
+    echo "$reset"
+    product="$clips/$mdate-$hour-$stime-$cam-event$COUNTER$desc.$format"
+    echo "output file: $product"
+cat "$temp_concat"
+
+
+    # ────────────────────────────────────────
+    #   Only run ffmpeg when not in debug mode
+    # ────────────────────────────────────────
+    if [ -z "$debug" ]; then
+
 ffmpeg -hide_banner -y \
-  -f concat \
-  -safe 0 \
-  -i <(  for ((i = $stime; i <= $etime; i++)) ; do echo "file "$(make_piece $pth $hour $i $stime $etime $spart $epart); done) \
-  -movflags use_metadata_tags -metadata "$meta" \
-  -c copy "$product" 
-
+    -f concat \
+    -safe 0 \
+    -i "$temp_concat" \
+    -movflags use_metadata_tags \
+    -metadata "$meta" \
+    -c copy "$product"    
 fi
 
+    rm -f "$temp_concat"
+fi
+
+# Optional: always increment counter (or only when we created something?)
+((COUNTER++))
+
+# db_insert only if we actually produced something?
+if $has_any; then
+    db_insert "$cam" "$mdate" "$hour" "$stime" "$etime" "$desc"
+fi
 }
 
 function make_events
@@ -187,7 +227,7 @@ do
     				case "$KEY" in
         				h)      hour=${VALUE} ;;
         				c)      cam=${VALUE} ;;
-        				*)   
+        				*)
     				esac 
 			done
 			echo "set hour to " $hour " and cam to " $cam

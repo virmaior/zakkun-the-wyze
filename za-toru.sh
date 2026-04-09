@@ -105,7 +105,7 @@ function hour_toru2
         [[ -d $hourp ]] || mkdir $hourp
         cd $hourp
 	#echo "root@"$wyzeip"/$cpath/record/"$day/$hourp"/*.mp4"
-        scp -r  "root@"$wyzeip":/$cpath/record/"$day/$hourp"/*.mp4"  "."
+        scp -r -O  "root@"$wyzeip":/$cpath/record/"$day/$hourp"/*.mp4"  "."
 	cd ..
 }
 

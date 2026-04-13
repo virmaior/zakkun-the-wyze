@@ -20,7 +20,7 @@ This primarily impacts the downloading of images from the cameras. Processing as
 
 # Current Features
 
-As of 2025-06-07, I've got the following:
+As of 2026-04-13, it has the following:
 * Script to download from Wyze V3's SD card to a computer (za-toru.sh ) for either wyze_hacks or wz_mini_hacks
 * Produce screenshots and display the screenshots in HTML pages to identify activity (za-miru.sh )
 * Identify and label video parts with activity (open in Brave, mark using clicking , dynamic cropping using percentages, then copy the "generate ranges" output to a string and send to za-horu.sh )
@@ -112,12 +112,12 @@ Wyze cameras often lose the date/time and configs or reboot . This checks to mak
 
 The default directory is not able to run cgi-bin code in these distributions. Instead, the cgi-bin files need to go to `/usr/lib/cgi-bin`
 
-
 # Histogram
 
-Using JavaScript canvas functionality the za-miru.js code now shrinks down the images and lowers their quality in the background to compare them. By shrinking them and lowering the quality, the amount of noise is going to down. It then makes an array of these and uses the second-largest value to determine a histogram threshold. This will let the end user find places where the image has changed between frames. (The histogram functionality assumes 3 images / minute).
+Using JavaScript canvas functionality the za-miru.js code now shrinks down the images and lowers their quality in the background to compare them. By shrinking them and lowering the quality, the amount of noise is going to down. It then makes an array of these and uses the second-largest value to determine a histogram threshold. This will let the end user find places where the image has changed between frames. (The histogram functionality assumes 4 images / minute).
+The 1/9th section of the image with the highest difference is overlayed in semi-transparent blue.
  
 
 # General Limitations
 
-I provide no warranty of any kind. My expertise in bash scripting is rather poor, and I haven't tested this on any systems but my own.
+This system has no warranty of any kind. My expertise in bash scripting is rather poor, and I haven't tested this on any systems but my own.

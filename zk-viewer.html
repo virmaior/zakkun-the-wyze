@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>zk viewer</title>
+  <link rel="stylesheet" href="zk-viewer.css">
+</head>
+<body>
+  <header id="zk_head">
+    <div id="zk_title" class="camColor">…</div>
+    <span id="zk_sources"></span>
+    <nav id="zk_nav">
+      <button data-nav="prev_cam">-cam</button>
+      <button data-nav="next_cam">cam+</button>
+      <button data-nav="prev_hour">-hr</button>
+      <button data-nav="next_hour">hr+</button>
+      <button data-nav="new_hour">hr ></button>
+    </nav>
+  </header>
+
+  <main id="zk_rows"></main>
+
+  <footer id="zk_foot">
+    <div id="zk_bar"></div>
+    <div id="zk_ranges"></div>
+    <div id="zk_tools">
+      <button id="zk_generate">Generate</button>
+      <button id="zk_clear1">Clear hour</button>
+      <button id="zk_clearall">Clear all</button>
+      <button id="zk_send">Send</button>
+      <button id="zk_copy">Copy cmd</button>
+      <span id="zk_msg"></span>
+    </div>
+    <pre id="zk_cmd"></pre>
+  </footer>
+
+  <script type="module" src="zk-viewer.js"></script>
+</body>
+</html>

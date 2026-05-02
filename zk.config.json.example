@@ -1,0 +1,81 @@
+{
+  "_comment": "Copy to zk.config.json and edit. All existing za-*.sh scripts keep working without this file; only the zk/* layer reads it.",
+
+  "webroot": "/var/www/html",
+  "tmp_dir": "/var/www/html/tmp",
+  "clips_dir": "/var/www/html/clips",
+  "digests_dir": "/var/www/html/digests",
+  "sqlite_path": "/var/www/html/zk.sqlite3",
+  "ffmpeg": "/usr/bin/ffmpeg",
+
+  "sources": {
+    "_comment": "A source is one independent copy of footage for a (date,cam). 'sep' is the directory separator used on disk today; 'bare_cam1' means cam 1 from this source historically had no suffix at all (YYYYMMDD/).",
+    "sd": {
+      "label": "SD pull",
+      "sep": "-",
+      "bare_cam1": true,
+      "acquirer": "scp"
+    },
+    "rtsp": {
+      "label": "RTSP capture",
+      "sep": "_",
+      "bare_cam1": false,
+      "acquirer": "rtsp"
+    }
+  },
+
+  "default_source_order": ["rtsp", "sd"],
+
+  "network": {
+    "subnet": "192.168.9",
+    "ip_pattern": "{subnet}.10{cam}"
+  },
+
+  "rtsp": {
+    "_comment": "Global defaults; any field can be overridden per camera under cameras.<id>.rtsp",
+    "username": "thingino",
+    "password": "thingino",
+    "endpoint": "ch0",
+    "transport": "tcp",
+    "fps": 25
+  },
+
+  "cameras": {
+    "_comment": "schedule.<source> is the hour window that source is active. '*' = 24h; '18-05' wraps midnight; a JSON list of ints is also accepted.",
+    "1": { "label": "cam1", "codec": "h264", "firmware": "thingino", "sources": ["rtsp", "sd"],
+           "schedule": { "rtsp": "*",     "sd": "*"     } },
+    "2": { "label": "cam2", "codec": "hevc", "firmware": "thingino", "sources": ["rtsp", "sd"],
+           "schedule": { "rtsp": "18-05", "sd": "18-05" } },
+    "3": { "label": "cam3", "codec": "hevc", "firmware": "thingino", "sources": ["rtsp", "sd"],
+           "schedule": { "rtsp": "18-05", "sd": "18-05" } },
+    "4": { "label": "cam4", "codec": "hevc", "firmware": "thingino", "sources": ["rtsp", "sd"],
+           "schedule": { "rtsp": "18-05", "sd": "18-05" } },
+    "5": { "label": "cam5", "codec": "hevc", "firmware": "thingino", "sources": ["rtsp", "sd"],
+           "schedule": { "rtsp": "18-05", "sd": "18-05" } },
+    "7": { "label": "cam7", "codec": "hevc", "firmware": "thingino", "sources": ["rtsp", "sd"],
+           "schedule": { "rtsp": "18-05", "sd": "18-05" },
+           "rtsp": { "username": "thingino", "password": "override-example" } },
+    "8": { "label": "cam8", "codec": "hevc", "firmware": "thingino", "sources": ["rtsp", "sd"],
+           "schedule": { "rtsp": "18-05", "sd": "18-05" } }
+  },
+
+  "capture": {
+    "caps_per_minute": 4,
+    "screen_prefix": "screen",
+    "screen_ext": "jpg"
+  },
+
+  "heatmap_dir": "/var/www/html/heatmap",
+
+  "daemon": {
+    "_comment": "Replaces the cron lines that start za-mono-adv per cam and run za-toru hourly.",
+    "tick_seconds": 20,
+    "rtsp_restart_hour": 18,
+    "sd_pull_delay_minutes": 2,
+    "sd_pull_miru": true,
+    "post_hour_score": true,
+    "nice": 10,
+    "toru_script": "/var/www/html/za-toru.sh",
+    "toru_scp_octet": "9"
+  }
+}

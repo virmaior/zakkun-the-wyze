@@ -3,7 +3,6 @@
 
 typeset -i COUNTER=0
 
-
 typeset -i vidlength
 typeset -A minarray
 typeset -Z 4 vcurrent
@@ -16,21 +15,19 @@ scaler2='scale=iw/2:ih/2'
 scaler5='scale=640x360'
 scalerb='scale=960x540'
 
-
-
 for ARGUMENT in "$@"
 do
     AKEY=$(echo $ARGUMENT | cut -f1 -d=)
     VALUE=$(echo $ARGUMENT | cut -f2 -d=)
     case "$AKEY" in
-        d)      day=${VALUE} ;;
- 	s)	smin=${VALUE} ;;
-	e)	emin=${VALUE} ;;
+	d)		day=${VALUE} ;;
+ 	s)		smin=${VALUE} ;;
+	e)		emin=${VALUE} ;;
 	prun)	prun=${VALUE};; 
 	next)	next=${VALUE};;
 	clear) clear=${VALUE};;
 	list)   list=${VALUE};;;
-        *)	echo "unknown paramater"${AKEY};;
+	*)	echo "unknown paramater"${AKEY};;
    esac
 done
 
@@ -76,7 +73,6 @@ else
     	exit 
 fi
 
-
 running=$(check_live "za-digest-live")
 if [[ "$running" -gt "0" ]]; then
         echo  '\e[0;31m' "digest in progress or file remains "
@@ -89,8 +85,6 @@ if [[ "$running" -gt "0" ]]; then
 fi
 
 set_live "za-digest-live" "$day"
-
-
 
 function decode_part
 {
@@ -163,7 +157,7 @@ function decode_minute
 		if [[ $pcount -eq "$prun" ]]
 		then
 			echo "only running for $prun"
-			echo ï¬	ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
+			echo ï¿½	ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
 			ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
 		fi
 	else if [[ $pcount -eq 1 ]] 
@@ -171,7 +165,7 @@ function decode_minute
 		echo ffmpeg -hide_banner -loglevel  "$elevel"  $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
 		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done) -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k "$outfile.mp4" 
 	else if [[ $pcount -gt 1 ]]
-		echo ï¬	ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
+		echo ï¿½	ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
 		ffmpeg -hide_banner -loglevel "$elevel" $( for mkey mval in "${(@kv)ffmap}"; do  printf "%s" "$mval ";  done)  -filter_complex "$filter" -map "[v]" -pix_fmt yuv420p -b:v "$brate" -vsync 2 -c:v "$accel" -an -s hd1080 -r 15 -video_track_timescale 30k  "$outfile.mp4"
 	fi 	
 	fi
@@ -183,8 +177,6 @@ function minute_output
 	echo "unknown minute output $1 $2"
 	exit;
 }
-
-
 
 for FILE in $cwd/clips/$day/$day-*
 do

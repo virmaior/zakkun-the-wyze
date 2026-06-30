@@ -3,22 +3,18 @@
 typeset -i COUNTER=0
 clips=$(pwd)"/clips"
 
-
 for ARGUMENT in "$@"
 do
-
     KEY=$(echo $ARGUMENT | cut -f1 -d=)
     VALUE=$(echo $ARGUMENT | cut -f2 -d=)   
-
     case "$KEY" in
 	f)		format=${VALUE} ;;
-	d)    		day=${VALUE} ;;     
+	d)      day=${VALUE} ;;     
 	i)		inp=${VALUE} ;;
-        debug)          debug=${VALUE} ;;
-	sep)		sep=${VALUE} ;;
-	*)   		echo "unknown: " $KEY  " " $VALUE ;;
+    debug)  debug=${VALUE} ;;
+	sep)    sep=${VALUE} ;;
+	*)      echo "unknown: " $KEY  " " $VALUE ;;
     esac
-
 done
 
 if [ -z "$sp" ];
@@ -38,8 +34,6 @@ then
 fi
 
 cwd=$(pwd)
-
-
 
 function switch_camera_dir
 {

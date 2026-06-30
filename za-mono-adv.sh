@@ -1,7 +1,6 @@
 #!/bin/zsh
 . /var/www/html/za-common.sh
 
-
 typeset -i COUNTER=0
 typeset -Z 2 -i minhour=00
 typeset -Z 2 -i maxhour=23
@@ -11,25 +10,20 @@ do
 
     KEY=$(echo $ARGUMENT | cut -f1 -d=)
     VALUE=$(echo $ARGUMENT | cut -f2 -d=)   
-
     case "$KEY" in
-	cam)		cam=${VALUE} ;;
+	    cam)	cam=${VALUE} ;;
+        stop)   stop=TRUE ;;
 	*)   
     esac
-
 done
 
 base_ip="192.168.9"
-
 
 if [ -z "$cam" ]; then
 	echo "no camera set"
 	exit;
 fi
 camip="$base_ip.10$cam"
-
-echo "camera ip is $camip"
-
 
 prot="h264"
 if [ "$cam" -ge 2 ]; then
@@ -49,8 +43,6 @@ create_directory_for() {
 	[ -d "$dir" ] || die "Cannot create directory $dir"
 	[ -w "$dir" ] || die "Cannot write to $dir"
 }
-
-
 
 
 create_now_directory()
@@ -87,7 +79,6 @@ read_config() {
         [ -z "$_" ] || echo "$2"
 }
 
-
 record_mount="/var/www"
 record_device_path="html"
 recordpath="$record_mount/$record_device_path"
@@ -110,8 +101,6 @@ if [ ! -d "$record_storage" ]; then
 fi
 [ -w "$record_storage" ] || die "Cannot write to $record_storage"
 
-
-
 find_cs()
 {
 u1=$(uptimecs)
@@ -128,12 +117,12 @@ done
 }
 
 
+echo "camera ip is $camip"
+
 log "
-stream_number: $stream_number
-stream_endpoint: $stream_endpoint
-stream_fps: $stream_fps
-stream_height: $stream_height
-stream_width: $stream_width
+stream_number: $stream_number   stream_endpoint: $stream_endpoint
+stream_fps: $stream_fps 
+stream_width: $stream_width     stream_height: $stream_height   
 "
 
 [ -z "$stream_number"   ] && die "Cannot determine stream number"
@@ -142,27 +131,41 @@ stream_width: $stream_width
 [ -z "$stream_height"   ] && die "Cannot determine stream height"
 [ -z "$stream_width"    ] && die "Cannot determine stream width"
 
-
 RECORD_FLAG="/var/www/html/tmp/record-$cam"
+
+if [ -n "$stop" ]; then
+    rm "$RECORD_FLAG"
+    echo "killed flag for camera $cam" 
+    exit
+fi
+
+
 if [ -f "$RECORD_FLAG" ]; then
-	die "Record already running for camera $cam"
+	die "Record already running for camera $cam . you can stop by adding stop to the parameters"
 fi
 
 touch $RECORD_FLAG
 
-offset_cs=$(find_cs)
-echo "$offset_cs"
-echo "sleeping until M:00"
-sleep $(( 60 - $(date +%S) ))
-# concept is 60 - current date but we have to be offset or get weird files
+wait_zero_s()
+{
+    offset_cs=$(find_cs)
+    local wait_s=$(( 60 - $(date +%S) ))
+    # concept is 60 - current date but we have to be offset or get weird files
+    echo "sleeping until M:00 (waiting $wait_s seconds)"
+    sleep "$wait_s"
+}
 
 record_dir_count=0
-
 record_file="$record_storage/%Y%m%d_$cam/%H/%M.$record_videofmt"
 create_now_directory
 create_next_directory
-
-command="$ffmpeg -rtsp_transport tcp -i rtsp://$rtsp_username:$rtsp_password@$camip/$stream_endpoint \
+timeout="10000000"
+command="$ffmpeg -rtsp_transport tcp \
+        -timeout $timeout \
+        -analyzeduration 2000000 \
+        -probesize 2000000 \
+        -fflags +genpts \
+        -i rtsp://$rtsp_username:$rtsp_password@$camip/$stream_endpoint \
          -c:v copy \
          -c:a aac -b:a 64k -ar 16000 -ac 1 \
          -map 0 \
@@ -172,20 +175,41 @@ command="$ffmpeg -rtsp_transport tcp -i rtsp://$rtsp_username:$rtsp_password@$ca
 	 -strftime  1 \
 	 $record_file"
 
-	echo "$command"
-	eval "$command" 2> /dev/null &
-	#eval "$command"
-	opid=$!
+echo "$command"
+run_count=0
+sleep_tick=0
 
 while :; do
-        [ -f $RECORD_FLAG ] || break
-	sleep 28
-	create_next_directory
+    [ -f $RECORD_FLAG ] || break
+    wait_zero_s         #wait for the zero second spot
+    eval "$command" 2> /dev/null &
+    opid=$!
+    (( run_count++ ))
+    if [[ "$run_count" -eq 1 ]]; then
+        run_id=$(insert_cam_run "$cam" "$opid")
+    elif [[ "$run_count" -gt 1 ]]; then
+        update_cam_run "$run_id" "$run_count" "started"
+    fi
+    while kill -0 $opid 2>/dev/null; 
+    do	
+        sleep 5
+        ((sleep_tick++))
+        if (( sleep_tick % 5 )); then
+	        create_next_directory
+        fi
+        if [ ! -f "$RECORD_FLAG" ]; then
+            echo "Record flag removed. Killing FFmpeg ($opid)..."
+            kill $opid
+            break 2 # Breaks out of both the inner and outer loop
+        fi
+    done
 done
 
 log "Cannot find recording flag $RECORD_FLAG"
 [ -n "$LEDD_FLAG" ] && [ -f "$LEDD_FLAG" ] && rm $LEDD_FLAG
-log "Exit"
+log "Exit ($opid)"
+
+update_cam_run "$run_id" "$run_count" "done"
 
 kill "$opid"
 

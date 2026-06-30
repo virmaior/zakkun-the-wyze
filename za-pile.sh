@@ -15,8 +15,6 @@ do
 
 done
 
-
-
 if [ -z "$day" ]; then
  day=$(datediff -v-1H %Y%m%d ) 
 fi

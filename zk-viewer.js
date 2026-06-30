@@ -62,6 +62,8 @@ const App = {
 
   // ----- bootstrap -------------------------------------------------------
   async init() {
+    this.zkBar = $("#zk_bar");
+
     if (!Q.d) { $("#zk_title").textContent = "missing ?d=YYYYMMDD"; return; }
     const r = await fetch(`/cgi-bin/zk.cgi?a=manifest&d=${Q.d}&cam=${Q.cam}&h=${Q.h}`);
     const j = await r.json();
@@ -79,7 +81,6 @@ const App = {
     this.restoreSelf();
     this.observeRows();
     if (this.manifest.scores) this.applyServerScores(this.manifest.scores);
-    else this.runDiffWhenLoaded();
   },
 
   applyServerScores(sc) {
@@ -153,7 +154,19 @@ const App = {
               </div>`;
     }).join("");
     $("#zk_rows").innerHTML = rows;
-    $$('.zk_shot > IMG').forEach( r => { r.addEventListener('mouseover',(e) => {
+    this.imgs = $$('.zk_shot > IMG');
+    this.imagesLeft = this.imgs.length;
+    this.imagesTotal = this.imagesLeft;
+    this.imagesDone = 0;
+    if (this.imagesLeft > 0) {  
+      this.zkBar.classList.add('loading'); 
+    }
+    this.imgs.forEach( r => {
+      r.loading = "eager"; 
+      r.complete ? this.imgDone()
+        :  r.addEventListener("load", () => { this.imgDone(); } , { once: true }),
+           r.addEventListener("error", () => { this.imgDone(); } , { once: true });
+      r.addEventListener('mouseover',(e) => {
         const t= e.currentTarget;
         const shot = t.closest(".zk_shot");
         const rect = t.getBoundingClientRect();
@@ -476,7 +489,7 @@ const App = {
         });
         this.renderRanges();
         this.observeRows();
-        this.diffs = []; this.runDiffWhenLoaded();
+        this.diffs = [];
     }));
 
     $("#zk_rows").addEventListener("click", e => {
@@ -523,7 +536,11 @@ const App = {
       if (nav_it === 'new_hour') {
           const thour = $('#zk_nav BUTTON[data-nav="next_hour"]').dataset.target.padStart(2,"0");
           p.set('h',thour);
-          if (thour == '00') { p.set('d',parseInt(p.get('d'))+1); }
+          if (thour == '00') { 
+             const cd = new Date(p.get('d').replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
+             cd.setDate(cd.getDate() + 1);
+             p.set('d',cd.toISOString().slice(0,10).replace(/-/g,"")); 
+          }
           p.set("cam", 1)
       } else {
         const t = b.dataset.target;
@@ -558,18 +575,15 @@ const App = {
     }, { threshold: 0.1 });
     $$(".zk_row").forEach(r => this._obs.observe(r));
   },
-
-  // ----- frame diff / histogram -----------------------------------------
-  runDiffWhenLoaded() {
-    const imgs = $$("#zk_rows img");
-    if (!imgs.length) return;
-    // force-load lazies that the diff needs
-    imgs.forEach(i => { i.loading = "eager"; });
-    let left = imgs.length;
-    const done = () => { if (--left === 0) this.runDiff(imgs); };
-    imgs.forEach(i => i.complete ? done()
-      : (i.addEventListener("load", done, { once: true }),
-         i.addEventListener("error", done, { once: true })));
+  imgDone()
+  {
+      const percent = Math.round(++this.imagesDone / this.imagesTotal * 100);
+      this.zkBar.style.setProperty('--progress', `${percent}%`);
+      this.zkBar.setAttribute('progress',percent);
+      if (--this.imagesLeft === 0)  {
+        this.zkBar.classList.remove('loading'); 
+        if (!this.manifest.scores) this.runDiff(this.imgs); 
+      }
   },
   isMostlyOneColor(ctx, W, H, threshold = 0.82) {
     const data = ctx.getImageData(0, 0, W, H).data;

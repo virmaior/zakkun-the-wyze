@@ -2,9 +2,7 @@
 cd /var/www/html
 
 waits="5"
-#sname="za-mono.sh"
 sname="za-mono-adv.sh"
-
 
 start_cam()
 {
@@ -14,14 +12,10 @@ start_cam()
 
 start_cams()
 {
-	start_cam 2
-	start_cam 3
-	start_cam 4
-	start_cam 5
-	start_cam 7
-	start_cam 8
-
-	start_cam 1
+	cams=(2 3 4 5 7 8 1)
+	for cam in $cams; do
+		start_cam "$cam"
+	done
 }
 
 stop_all()

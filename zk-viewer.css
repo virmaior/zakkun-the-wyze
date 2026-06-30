@@ -7,7 +7,7 @@
 body { margin: 0; padding: 0 0 220px 0; background: #111; color: #ddd; }
 
 #zk_head {
-  position: sticky; top: 0; z-index: 5;
+  position: sticky; top: 0; z-index: 10 ;
   display: flex; gap: 16px; align-items: center;
   padding: 3px 10px; background: #1b1b1b; border-bottom: 1px solid #333;
   height:30px;
@@ -122,12 +122,7 @@ body { margin: 0; padding: 0 0 220px 0; background: #111; color: #ddd; }
   content: '...';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 25%,
-    rgba(255,255,255,0.6) 50%,
-    transparent 75%
-  );
+  background: rgba(180,200,180,0.5);
   height: var(--row-h);
   width:100%;
   top:0;
@@ -140,7 +135,7 @@ body { margin: 0; padding: 0 0 220px 0; background: #111; color: #ddd; }
   height:60vh;
   width:60vw;
   outline:1px solid green;
-  z-index: 4;
+  z-index: 6;
 }
 .openImage > img {
   width:100%;
@@ -154,13 +149,11 @@ body { margin: 0; padding: 0 0 220px 0; background: #111; color: #ddd; }
   display:block;
 }
 
-.zk_shot.motion::after {
-  content: ""; position: absolute; inset: 0;
-  background: rgba(80,140,255,.18); pointer-events: none;
-}
+
 .zk_shot[data-reg]::before {
   content: ""; position: absolute; width: 33.33%; height: 33.33%;
   background: rgba(80,140,255,.35); pointer-events: none;
+  z-index:4;
 }
 .zk_shot[data-reg="tl"]::before { top:0; left:0; }
 .zk_shot[data-reg="tc"]::before { top:0; left:33.33%; }
@@ -182,8 +175,22 @@ body { margin: 0; padding: 0 0 220px 0; background: #111; color: #ddd; }
   position: fixed; bottom: 0; left: 0; right: 0;
   background: #1b1b1b; border-top: 1px solid #333; padding: 4px 6px 8px;
   max-height: 210px; overflow-y: auto;
+  z-index: 5;
 }
-#zk_bar { display: grid; grid-template-columns: repeat(60, 1fr); gap: 1px; height: 34px; }
+#zk_bar { display: grid; grid-template-columns: repeat(60, 1fr); gap: 1px; height: 34px; position:relative; }
+#zk_bar.loading::before {
+  position:absolute;
+  left:0;
+  bottom:0;
+  height:50%;
+  width: var(--progress, 0);           /* Default to 0 */
+  background: rgba(100,200,200, 0.5);
+  transition: width 0.2s ease-out;      /* Smooth updates */
+  content:attr(progress) "%";
+  vertical-align:bottom;
+  z-index:10;
+
+}
 .zk_cell {
   position: relative; background: #222; 
   font-size: 9px; text-align: center;
@@ -198,9 +205,21 @@ body { margin: 0; padding: 0 0 220px 0; background: #111; color: #ddd; }
 .zk_cell.za_start { background: #2e7d32; }
 .zk_cell.za_end   { background: #c62828; }
 .zk_cell.za_start.za_end { background: #f9a825; color: #000; }
-.zk_cell .hist {
-  background: #4a90d9; opacity: .6;
-  height: calc(100% * var(--d, 0) / var(--maxd));
+.zk_cell > .hist {
+  --color-min: #3b66aa;
+  --color-mid: #4499dd;
+  --color-max: #66ccff;
+  --ratio:calc(var(--d, 0) / var(--maxd) * 100%);
+  --mix-first-half: calc(var(--ratio) * 2);  
+  --mix-second-half: calc((var(--ratio) - 50%) * 2);  
+  background-color: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--color-max) var(--mix-second-half), var(--color-mid)),
+    color-mix(in srgb, var(--color-mid) var(--mix-first-half),var(--color-min)) 
+  );
+
+  opacity: .8;
+  height: var(--ratio);
   flex: 1;
   vertical-align: bottom;
 }
@@ -220,8 +239,8 @@ body { margin: 0; padding: 0 0 220px 0; background: #111; color: #ddd; }
    right:0; 
    width:20px; 
    border-radius:3px;
-   background-color:blue;
-   color:white;
+   background-color:white;
+   color:var(--camColor,#000);
    text-align:center;
  }
 
@@ -235,16 +254,16 @@ body { margin: 0; padding: 0 0 220px 0; background: #111; color: #ddd; }
 #zk_cmd { margin: 4px 0 0; font-size: 10px; max-height: 40px; overflow: auto; color: #888; }
 
 
-.camColor { color:white; }
-.camColor[cam="1"] { background-color: darkorange; }
-.camColor[cam="2"] { background-color: darkgoldenrod; }
-.camColor[cam="4"] { background-color: rgb(155, 123, 02); ; }
-.camColor[cam="8"] { background-color: rgb(255, 111, 0); }
+.camColor { color:white; background-color:var(--camColor,#ccc); }
+DIV[cam="1"] { --camColor: darkorange; }
+DIV[cam="2"] { --camColor: darkgoldenrod; }
+DIV[cam="4"] { --camColor: rgb(155, 123, 02); ; }
+DIV[cam="8"] { --camColor: rgb(255, 111, 0); }
 
 
-.camColor[cam="3"] { background-color: purple; }
-.camColor[cam="5"] { background-color: violet; }
-.camColor[cam="7"] { background-color: magenta; }
+DIV[cam="3"] { --camColor: purple; }
+DIV[cam="5"] { --camColor: violet; }
+DIV[cam="7"] { --camColor: magenta; }
 
 .otherLabel {
   overflow:hidden;
@@ -257,14 +276,14 @@ body { margin: 0; padding: 0 0 220px 0; background: #111; color: #ddd; }
 {
   content:attr(cam);
   width:15px;
-  border-radius:3px;
+  border-radius:2px;
   text-align:center;
   position:absolute;
   left:0;
   top:0;
-  color:white;
+  color:var(--camColor,#000);
   font-weight:bold;
-  background-color:black;
+  background-color:#fff;
 }
 
 

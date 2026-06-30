@@ -11,11 +11,16 @@ Verbs:
     status   d=YYYYMMDD cam=N         print per-hour coverage per source
     config                            dump resolved config (sans creds)
     daemon   [dry=1] [once=1]         supervisor: rtsp recorders + hourly pull/score
+
+Special meaning:
+    d=yesterday will automatically translate to the previous date
+
 """
 from __future__ import annotations
 
 import json
 import sys
+from datetime import date, datetime, timedelta
 from typing import Dict
 
 from . import config, manifest, sources, store
@@ -80,18 +85,26 @@ def cmd_score(args):
     if not score.available():
         print("Pillow not installed; install with: pip install Pillow", file=sys.stderr)
         return
+    start = datetime.now();
     d = args["d"]
     s = int(args.get("s", 0))
     e = int(args.get("e", 23))
     print(f"for date {d} starting {s} ending {e}")
 
 
-    for cam in _cams(args):
-        for h in range(s, e + 1):
+    # because we look through footage in hours we want to check it by the hour -- not the camera when multiple cameras are involved
+    for h in range(s, e + 1):
+        for cam in _cams(args):
+            sstart = datetime.now();
             p = score.write(d, cam, h, source_id=args.get("source"))
             if p:
-                print(p)
+                end = datetime.now()
+                elapsed = end - sstart
+                print(f"{p} ({elapsed})")
 
+    end = datetime.now()
+    elapsed = end - start            
+    print(f"total elapsed time {elapsed}")
 
 def cmd_daemon(args):
     from . import daemon
@@ -116,7 +129,12 @@ def main(argv=None):
         return 1
     verb = argv.pop(0)
     try:
-        VERBS[verb](_kv(argv))
+        kvs =_kv(argv);
+        if ('d' in kvs):
+            if kvs.get('d') == 'yesterday':
+                yesterday = date.today() - timedelta(days=1)
+                kvs['d'] = yesterday.strftime('%Y%m%d');
+        VERBS[verb](kvs)
         return 0
     except KeyError as e:
         print(f"missing required arg {e}", file=sys.stderr)

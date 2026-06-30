@@ -1,10 +1,7 @@
 #!/bin/zsh
-
 . /var/www/html/za-common.sh
 
-
 declare -A result
-
 
 color_ynp() {
     local input="$1"
@@ -119,8 +116,6 @@ for key in "${(@k)res2}"; do
 
 done
 
-
-
 echo " - only days for a camera "
 for key in "${(@k)res2}"; do
         # 20251108cam8_
@@ -134,4 +129,3 @@ for key in "${(@k)res2}"; do
 fi
 
 done
-

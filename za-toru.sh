@@ -1,8 +1,6 @@
 #!/bin/zsh
 . /var/www/html/za-common.sh
 
-
-typeset -i COUNTER=0
 typeset -Z 2 -i minhour=00
 typeset -Z 2 -i maxhour=23
 
@@ -14,12 +12,12 @@ do
     VALUE=$(echo $ARGUMENT | cut -f2 -d=)   
 
     case "$KEY" in
-	d)		day=${VALUE} ;;
+	d)			day=${VALUE} ;;
 	s)    		minhour=${VALUE} ;;
-	e)		maxhour=${VALUE} ;;
-	m)		miru=${VALUE} ;;
+	e)			maxhour=${VALUE} ;;
+	m)			miru=${VALUE} ;;
 	cron)		cron=${VALUE} ;;
-	ip)		wyzeip=${VALUE}} ;;
+	ip)			wyzeip=${VALUE}} ;;
 	cam)		cam=${VALUE} ;;
 	skip)		skip=${VALUE} ;;
 	scp)		scp=${VALUE} ;;
@@ -28,15 +26,11 @@ do
 
 done
 
-
-
 if [ -n "$scp" ] 
 then
 	netmask=192.168.$scp
 	echo "working in $netmask"
 fi
-
-
 
 if [ -n "$cron" ]
 then
@@ -45,8 +39,6 @@ then
 	maxhour=$(datediff -v-1H %H)
 	miru=yes
 fi
-
-
 
 if [ -n "$day" ]
 then
@@ -60,22 +52,21 @@ else
 	fi
 fi
 
-
-
 echo $day " from " $minhour " to " $maxhour
 cpath="mnt/mmcblk0p1"
 
 if [ -n "$cam" ] 
 then
 	echo "running on camera $cam"
-	mkdir "$day-$cam"
-	cd "$day-$cam"
+	tgdir="$day-$cam"
 	wyzeip=$netmask.10$cam
 else
 	wyzeip=$netmask.101
-	mkdir "$day"
-	cd "$day"
+	tgdir="$day"
 fi
+
+mkdir "$tgdir"
+cd "$tgdir"
 
 echo "camera ip is $wyzeip"
 
@@ -109,34 +100,33 @@ function hour_toru2
 	cd ..
 }
 
-
-#start_wyze_boa
-
-if [ -z "$skip"]
-then
+if [ -n "$skip"]; then
+	exit 
+fi
 
 typeset -Z 2 -i minp
 
+if [ -n "$cam" ]
+then
+	camstring='cam='$cam
+fi
+
 for ((hour =$minhour; hour <= $maxhour; hour++)) 
 do
+	toru_id=$(queue_job "now" "toru" "d=$day s=$hour e=$hour $camstring" "started" )
+	if [ -n "$miru" ] 
+	then
+		echo "queuing miru"
+		miru_id=$(queue_job "slow" "miru" "d=$day s=$hour e=$hour $camstring" "queued" "$toru_id")
+	fi
+
 	if [ -n "$scp" ] 
 	then
 		hour_toru2 $hour
 	else	 
 		hour_toru $hour	
 	fi
+	$(update_job_status "$toru_id" 'done')
 done
-fi
 
 cd ..
-
-
-if [ -n "$miru" ] 
-then
-	echo "running miru"
-	if [ -n "$cam" ]
-	then
-		camstring='cam='$cam
-	fi
-	zsh za-miru.sh d=$day s=$minhour e=$maxhour $camstring
-fi

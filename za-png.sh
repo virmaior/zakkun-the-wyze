@@ -17,15 +17,13 @@ do
 	min)		min=${VALUE};;
 	sec)		sec=${VALUE};;
 	spt)		spt=${VALUE};;
-       *)   
+    *)   
     esac    
 
 done
 
-
-
 if [ -z "$day" ]; then
- day=$(datediff -v-1H %Y%m%d ) 
+    day=$(datediff -v-1H %Y%m%d ) 
 fi
 
 
@@ -63,4 +61,3 @@ done
 echo "resolved to use ${orf}${orfe}.png filename"
 
 makepng $dcm/$h/$min.mp4 "${orf}${orfe}.png" $sec
-

@@ -3,7 +3,6 @@ typeset -i COUNTER=0
 digs=$(pwd)"/digests"
 cwd=$(pwd)
 
-
 cron_search()
 {
         odate="20220101"
@@ -84,7 +83,7 @@ then
 	my_count=0
 	for  goday in $(echo "$days")
 	do
-                my_count=$(($my_count+1))
+		my_count=$(($my_count+1))
 		if [[ $my_count -eq $day_count ]] 
 		then
 			echo "last day $goday - might be incomplete skipping "

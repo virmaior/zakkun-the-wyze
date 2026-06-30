@@ -11,16 +11,15 @@ colcount=$(tput cols)
 
 if  [[ "$mode" == "web" ]]
 then
-perrow=8
+    perrow=8
 else
-perrow=$(( colcount / 12))
+    perrow=$(( colcount / 12))
 fi
 i=0
 max=20240101
 IFS=" "
 
 typeset -A result   # top level: date → sub-array
-
 
 testcamdir()
 {

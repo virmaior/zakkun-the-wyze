@@ -19,26 +19,26 @@ do
         skiphtml)       skiphtml=${VALUE} ;;
         *)   
     esac    
-
-
 done
+
+exit_msg()
+{
+    echo "must set $1"
+    exit;
+}
 
 
 if [ -z "$day" ]; then
- echo "must set day"
-exit;
+    exit_msg "day"
 fi
 
 if [ -z "$s_hour" ]; then
- echo "must set start hour"
-exit;
+    exit_msg "start hour (s_hour)"
 fi
 
 if [ -z "$e_hour" ]; then
- echo "must set end hour"
-exit;
+    exit_msg "end hour (e_hour)"
 fi
-
 
 for c in 1 2 3 4 5 7; do
 	zsh za-toru.sh scp=9 cam="$c" d="$day" s="$s_hour" e="$e_hour" m=y
